@@ -1,0 +1,41 @@
+<?php
+require_once __DIR__ . '/../backend/db.php';
+header('Content-Type: application/json');
+
+$data = [];
+
+// QUERY CORRETTA basata sulle colonne REALI della tabella dashboard
+$sql = "
+    SELECT 
+        r.id,
+        r.tipo_attivita,
+        d.id AS dipendente_id,
+        d.nome AS dipendente_nome,
+        c.nome AS cantiere_nome,
+        m.nome_mezzo AS mezzo_nome,
+        r.lat,
+        r.lng,
+        r.data_attivita AS data_registrazione
+    FROM dashboard r
+    LEFT JOIN dipendenti d ON r.dipendente_id = d.id
+    LEFT JOIN cantieri c ON r.cantiere_id = c.id
+    LEFT JOIN mezzi m ON r.mezzo_id = m.id
+    ORDER BY r.id ASC
+";
+
+$res = $conn->query($sql);
+
+if ($res) {
+    while ($row = $res->fetch_assoc()) {
+        $data[] = $row;
+    }
+    echo json_encode(["success" => true, "data" => $data]);
+} else {
+    echo json_encode([
+        "success" => false,
+        "message" => "Errore SQL: " . $conn->error
+    ]);
+}
+
+$conn->close();
+?>

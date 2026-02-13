@@ -1,0 +1,616 @@
+/* ==========================================
+   RESET E BASE
+   ========================================== */
+* { 
+    font-family: "Poppins", sans-serif; 
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: #f6f7fb;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* ==========================================
+   NAVBAR
+   ========================================== */
+.navbar {
+    background: linear-gradient(90deg, #ffffff 0%, #f2f6fb 100%);
+    height: 70px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050 !important; /* AUMENTATO - deve stare sopra tutto */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.navbar-brand {
+    font-weight: 600;
+    color: #0d6efd;
+}
+
+/* ==========================================
+   SIDEBAR - BLU SCURO IN TUTTE LE PAGINE
+   ========================================== */
+#sidebar {
+   position: fixed !important;
+    top: 70px !important;
+    left: 0 !important;
+    width: 260px !important;
+    height: calc(100vh - 70px) !important;
+    z-index: 1040 !important; /* Un gradino sotto la navbar */
+}
+
+/* Forza lo sfondo anche con classi Bootstrap */
+#sidebar.text-white,
+#sidebar.shadow,
+div#sidebar {
+    background: linear-gradient(180deg, #1a237e 0%, #0d47a1 100%) !important;
+}
+
+/* Header della sidebar */
+#sidebar .p-4,
+#sidebar > div:first-child {
+    padding: 20px !important;
+    background: transparent !important;
+}
+
+#sidebar h4,
+#sidebar .h4 {
+    color: #fff !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+}
+
+#sidebar h4 span {
+    color: #fff !important;
+}
+
+/* Border sotto header */
+#sidebar .border-bottom {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Lista menu */
+#sidebar .nav,
+#sidebar ul.nav {
+    padding: 20px 10px !important;
+    background: transparent !important;
+}
+
+#sidebar .nav-item,
+#sidebar li.nav-item {
+    margin-bottom: 5px !important;
+}
+
+/* Link del menu */
+#sidebar .nav-link,
+#sidebar a.nav-link {
+    display: flex !important;
+    align-items: center !important;
+    padding: 15px 20px !important;
+    margin-bottom: 6px !important;
+    border-radius: 10px !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    transition: all 0.3s ease !important;
+    border-left: 4px solid transparent !important;
+    background: transparent !important;
+}
+
+#sidebar .nav-link:hover,
+#sidebar a.nav-link:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+    border-left: 4px solid #4fc3f7 !important;
+}
+
+#sidebar .nav-link.active,
+#sidebar a.nav-link.active,
+#sidebar .active-link {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #fff !important;
+    border-left: 4px solid #4fc3f7 !important;
+}
+
+/* Icone */
+#sidebar i,
+#sidebar .fa-solid { 
+    color: #4fc3f7 !important;
+    margin-right: 10px !important;
+}
+
+/* Dropdown (collapse) */
+#sidebar .collapse,
+#sidebar .collapsing,
+#sidebar div.collapse,
+#sidebar div.collapsing {
+    background: transparent !important;
+}
+
+#sidebar .collapse .nav,
+#sidebar .collapsing .nav,
+#sidebar .collapse ul,
+#sidebar .collapsing ul {
+    background: transparent !important;
+    padding-left: 0 !important;
+    margin-top: 5px !important;
+}
+
+#sidebar .collapse .nav-link,
+#sidebar .collapsing .nav-link {
+    padding-left: 50px !important;
+    font-size: 14px !important;
+    background: transparent !important;
+}
+
+/* Chevron */
+#sidebar .fa-chevron-down {
+    transition: transform 0.3s ease !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+#sidebar .nav-link[aria-expanded="true"] .fa-chevron-down {
+    transform: rotate(180deg) !important;
+}
+/* ==========================================
+   CONTENUTO PRINCIPALE
+   ========================================== */
+.main-content {
+    margin-left: 260px !important; /* Deve essere uguale alla larghezza sidebar */
+    margin-top: 70px !important;  /* Deve essere uguale all'altezza navbar */
+    padding: 30px !important;
+    width: calc(100% - 260px) !important;
+    min-height: calc(100vh - 70px);
+    display: block;
+    position: relative;
+}
+
+/* Contenitore flex */
+.d-flex {
+    display: flex !important;
+}
+
+/* ==========================================
+   HEADER E TITOLI
+   ========================================== */
+header {
+    color: #0056D2;
+    padding: 15px 0;
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+h2 {
+    color: #0056D2;
+    margin: 0;
+}
+
+/* ==========================================
+   CARD
+   ========================================== */
+.card {
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    background: white;
+}
+
+.card-body {
+    padding: 25px;
+}
+
+/* ==========================================
+   FILTRI
+   ========================================== */
+.filtri-section {
+    background: #e8eaf6;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.filtri-section h4 {
+    color: #0056D2;
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+}
+
+.filtri-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.filtro-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filtro-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.filtro-group input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.filtro-group input:focus {
+    outline: none;
+    border-color: #0056D2;
+    box-shadow: 0 0 0 2px rgba(0, 86, 210, 0.1);
+}
+
+/* ==========================================
+   TABELLE
+   ========================================== */
+.table-responsive {
+   display: block;
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.table {
+    background: white !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    margin-bottom: 0 !important;
+}
+
+.table thead {
+    background: #f1f4f9 !important;
+}
+
+.table thead th {
+    font-weight: 600 !important;
+    color: #555 !important;
+    padding: 15px !important;
+    white-space: nowrap !important;
+    font-size: 13px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+
+.table tbody td {
+    padding: 15px !important;
+    vertical-align: middle !important;
+}
+
+.table tbody tr:hover {
+    background: #eaf3ff !important;
+    transition: background 0.2s ease;
+}
+
+.table tbody code {
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #495057;
+}
+
+/* ==========================================
+   BOTTONI
+   ========================================== */
+button,
+.btn {
+    background: #0056D2;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+button:hover,
+.btn:hover {
+    background: #003f9e;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 86, 210, 0.3);
+}
+
+.btn-primary {
+    background: linear-gradient(90deg, #0d6efd, #4dabf7);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(90deg, #0b5ed7, #3797ff);
+}
+
+.btn-warning {
+    background: #ffc107 !important;
+    color: #000;
+}
+
+.btn-warning:hover {
+    background: #e0a800 !important;
+}
+
+.btn-danger {
+    background: #dc3545 !important;
+}
+
+.btn-danger:hover {
+    background: #c82333 !important;
+}
+
+.btn-secondary {
+    background: #6c757d;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-cancel {
+    background: #6c757d;
+}
+
+.btn-cancel:hover {
+    background: #5a6268;
+}
+
+.btn-filtra {
+    background: #0056D2;
+    align-self: flex-end;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.btn-outline-secondary {
+    background: transparent;
+    border: 2px solid #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+}
+
+/* ==========================================
+   BADGE
+   ========================================== */
+.badge-stato {
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.badge-attivo { 
+    background: #d1e7dd; 
+    color: #0f5132; 
+}
+
+.badge-chiuso { 
+    background: #f8d7da; 
+    color: #842029; 
+}
+
+.badge-manutenzione { 
+    background: #fff3cd; 
+    color: #856404; 
+}
+
+.badge-fuori-uso { 
+    background: #f8d7da; 
+    color: #721c24; 
+}
+
+/* ==========================================
+   MODAL
+   ========================================== */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal.show {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(-30px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 15px;
+}
+
+.modal-header h3 {
+    color: #0056D2;
+    margin: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #888;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.close-btn:hover {
+    color: #333;
+    background: none;
+    transform: none;
+}
+
+.modal-footer {
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    text-align: right;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label,
+.col-md-6 label,
+.col-md-4 label,
+.col-md-12 label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #333;
+}
+
+#mezzoModal .tab-pane {
+    display: none;
+}
+
+#mezzoModal .tab-pane.active {
+    display: block;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal.show {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(4px);
+}
+
+.modal.show {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #fff;
+    padding: 25px;
+    border-radius: 18px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.custom-tabs .nav-link {
+    cursor: pointer;
+    padding: 10px 18px;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}

@@ -1,0 +1,50 @@
+<?php
+require_once __DIR__ . '/../backend/db.php';
+header('Content-Type: application/json');
+
+$data = json_decode(file_get_contents("php://input"), true);
+
+$nome_mezzo = $data['nome_mezzo'] ?? null;
+$targa = $data['targa'] ?? null;
+$tipo = $data['tipo'] ?? null;
+$anno = $data['anno'] ?? null;
+$portata_kg = $data['portata_kg'] ?? null;
+$centro_costo = $data['centro_costo'] ?? null;
+$pneumatici_attuali = $data['pneumatici_attuali'] ?? null;
+$dotazioni = $data['dotazioni'] ?? null;
+$ultima = $data['ultima_manutenzione'] ?? null;
+$prossima = $data['prossima_manutenzione'] ?? null;
+$stato = $data['stato'] ?? 'attivo';
+$note = $data['note'] ?? null;
+
+$sql = "INSERT INTO mezzi 
+        (nome_mezzo, targa, tipo, anno, portata_kg, centro_costo, pneumatici_attuali, dotazioni, ultima_manutenzione, prossima_manutenzione, stato, note)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+$stmt = $conn->prepare($sql);
+
+$stmt->bind_param(
+    "sssissssssss",
+    $nome_mezzo,
+    $targa,
+    $tipo,
+    $anno,
+    $portata_kg,
+    $centro_costo,
+    $pneumatici_attuali,
+    $dotazioni,
+    $ultima,
+    $prossima,
+    $stato,
+    $note
+);
+
+if ($stmt->execute()) {
+    echo json_encode(["success" => true]);
+} else {
+    echo json_encode(["success" => false, "error" => $stmt->error]);
+}
+
+$stmt->close();
+$conn->close();
+?>

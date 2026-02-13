@@ -1,0 +1,51 @@
+<?php
+require_once __DIR__ . '/../backend/db.php';
+header('Content-Type: application/json');
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Query allineata alla TUA tabella MySQL
+$sql = "SELECT 
+            id,
+            nome,
+            cognome,
+            dataDiNascita,
+            sesso,
+            stato_civile,
+            telefono,
+            recapitieMail,
+            indirizzoResidenza,
+            codice_fiscale,
+            data_assunzione,
+            patenti,
+            iban,
+            Corsi_e_Formazione,
+            created_at,
+            updated_at
+        FROM dipendenti
+        ORDER BY id ASC";
+
+$result = $conn->query($sql);
+
+if (!$result) {
+    echo json_encode([
+        "success" => false,
+        "error" => $conn->error
+    ]);
+    exit;
+}
+
+$dipendenti = [];
+
+while ($row = $result->fetch_assoc()) {
+    $dipendenti[] = $row;
+}
+
+echo json_encode([
+    "success" => true,
+    "data" => $dipendenti
+]);
+
+$conn->close();
+?>
