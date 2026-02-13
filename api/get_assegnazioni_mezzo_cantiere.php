@@ -1,65 +1,69 @@
 <?php
-// api/get_assegnazioni_mezzi_cantiere.php
-// Recupera le assegnazioni mezzi di un cantiere
+header('Content-Type: application/json');
 
+require_once __DIR__ . '/../backend/auth.php';
 require_once __DIR__ . '/../backend/db.php';
-header('Content-Type: application/json; charset=utf-8');
 
 try {
-    $id_cantiere = isset($_GET['id_cantiere']) ? (int)$_GET['id_cantiere'] : null;
+    $id_mezzo = $_GET['id_mezzo'] ?? 0;
+    $id_cantiere = $_GET['id_cantiere'] ?? null;
     
     if (!$id_cantiere) {
-        throw new Exception("ID cantiere non fornito");
+        throw new Exception('ID Cantiere non fornito');
     }
-
-    $query = "
-        SELECT 
-            am.id,
-            am.id_mezzo,
-            am.id_dipendente,
-            am.id_cantiere,
-            am.ora_inizio,
-            am.ora_fine,
-            am.km_inizio,
-            am.km_fine,
-            am.consumo_carburante,
-            am.costo_carburante,
-            am.note,
-            m.nome_mezzo,
-            m.targa,
-            d.nome AS nome_dipendente,
-            d.cognome AS cognome_dipendente
-        FROM assegnazioni_mezzo am
-        LEFT JOIN mezzi m ON am.id_mezzo = m.id
-        LEFT JOIN dipendenti d ON am.id_dipendente = d.id
-        WHERE am.id_cantiere = ?
-        ORDER BY am.ora_inizio DESC
-    ";
     
-    $stmt = $conn->prepare($query);
+    // Query per ottenere le assegnazioni mezzo al cantiere
+    $sql = "SELECT 
+                amc.id,
+                amc.id_mezzo,
+                amc.id_cantiere,
+                amc.id_dipendente,
+                amc.ora_inizio,
+                amc.ora_fine,
+                amc.km_inizio,
+                amc.km_fine,
+                amc.note,
+                m.id as mezzo_id,
+                m.nome_mezzo,
+                m.targa,
+                d.id as dipendente_id,
+                d.nome as nome_dipendente,
+                d.cognome as cognome_dipendente
+            FROM assegnazioni_mezzo_cantiere amc
+            LEFT JOIN mezzi m ON amc.id_mezzo = m.id
+            LEFT JOIN dipendenti d ON amc.id_dipendente = d.id
+            WHERE amc.id_cantiere = ?";
     
+    $stmt = $conn->prepare($sql);
     if (!$stmt) {
-        throw new Exception("Errore prepare: " . $conn->error);
+        throw new Exception('Errore nella preparazione query: ' . $conn->error);
     }
     
-    $stmt->bind_param("i", $id_cantiere);
-    $stmt->execute();
+    $stmt->bind_param('i', $id_cantiere);
+    
+    if (!$stmt->execute()) {
+        throw new Exception('Errore nell\'esecuzione query: ' . $stmt->error);
+    }
     
     $result = $stmt->get_result();
-    $assegnazioni = [];
+    $data = [];
     
     while ($row = $result->fetch_assoc()) {
-        $assegnazioni[] = $row;
+        $data[] = $row;
     }
     
-    echo json_encode(['success' => true, 'data' => $assegnazioni]);
+    echo json_encode([
+        'success' => true,
+        'data' => $data
+    ]);
     
     $stmt->close();
     
 } catch (Exception $e) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
+    ]);
 }
-
-$conn->close();
 ?>

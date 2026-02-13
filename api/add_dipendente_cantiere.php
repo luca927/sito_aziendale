@@ -1,64 +1,64 @@
 <?php
-// api/assegnazioni/dipendenti_cantieri_add.php
-// Assegna un dipendente a un cantiere
+header('Content-Type: application/json');
 
+require_once __DIR__ . '/../backend/auth.php';
 require_once __DIR__ . '/../backend/db.php';
 
-header('Content-Type: application/json; charset=utf-8');
-
 try {
-    $input = json_decode(file_get_contents("php://input"), true);
+    $data = json_decode(file_get_contents('php://input'), true);
     
-    if (!$input || !isset($input['id_dipendente']) || !isset($input['id_cantiere'])) {
-        throw new Exception("Dati obbligatori mancanti");
+    if (!$data) {
+        throw new Exception('Dati non validi');
     }
     
-    $id_dipendente = (int)$input['id_dipendente'];
-    $id_cantiere = (int)$input['id_cantiere'];
-    $ruolo_cantiere = $input['ruolo_cantiere'] ?? 'Operaio';
-    $ore_previste = isset($input['ore_previste']) ? (int)$input['ore_previste'] : null;
-    $data_inizio = $input['data_inizio'] ?? date('Y-m-d');
-    $data_fine = $input['data_fine'] ?? null;
+    $id_dipendente = $data['id_dipendente'] ?? null;
+    $id_cantiere = $data['id_cantiere'] ?? null;
+    $ruolo_cantiere = $data['ruolo_cantiere'] ?? null;
+    $ore_previste = $data['ore_previste'] ?? null;
+    $data_inizio = $data['data_inizio'] ?? null;
+    $data_fine = $data['data_fine'] ?? null;
     
-    // Verifica dipendente
-    $checkDip = $conn->prepare("SELECT id FROM dipendenti WHERE id = ?");
-    $checkDip->bind_param("i", $id_dipendente);
-    $checkDip->execute();
-    if ($checkDip->get_result()->num_rows === 0) {
-        throw new Exception("Dipendente non trovato");
+    if (!$id_dipendente || !$id_cantiere) {
+        throw new Exception('Dipendente e Cantiere sono obbligatori');
     }
     
-    // Verifica cantiere
-    $checkCant = $conn->prepare("SELECT id FROM cantieri WHERE id = ?");
-    $checkCant->bind_param("i", $id_cantiere);
-    $checkCant->execute();
-    if ($checkCant->get_result()->num_rows === 0) {
-        throw new Exception("Cantiere non trovato");
+    // Inserisci l'assegnazione dipendente al cantiere
+    $sql = "INSERT INTO assegnazioni_dipendenti_cantiere 
+            (id_dipendente, id_cantiere, ruolo_cantiere, ore_previste, data_inizio, data_fine) 
+            VALUES (?, ?, ?, ?, ?, ?)";
+    
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        throw new Exception('Errore nella preparazione query: ' . $conn->error);
     }
     
-    $query = "
-        INSERT INTO assegnazioni_cantiere 
-        (id_dipendente, id_cantiere, ruolo_cantiere, ore_previste, data_inizio, data_fine)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ";
+    $stmt->bind_param(
+        'iissss',
+        $id_dipendente,
+        $id_cantiere,
+        $ruolo_cantiere,
+        $ore_previste,
+        $data_inizio,
+        $data_fine
+    );
     
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("iisiss", $id_dipendente, $id_cantiere, $ruolo_cantiere, 
-                      $ore_previste, $data_inizio, $data_fine);
-    
-    if ($stmt->execute()) {
-        echo json_encode([
-            'success' => true,
-            'message' => 'Assegnazione creata',
-            'id' => $conn->insert_id
-        ]);
-    } else {
-        throw new Exception("Errore durante l'inserimento");
+    if (!$stmt->execute()) {
+        throw new Exception('Errore nell\'inserimento: ' . $stmt->error);
     }
+    
+    echo json_encode([
+        'success' => true,
+        'message' => 'Dipendente assegnato correttamente',
+        'id' => $stmt->insert_id
+    ]);
+    
+    $stmt->close();
     
 } catch (Exception $e) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
+    ]);
 }
-$conn->close();
 ?>

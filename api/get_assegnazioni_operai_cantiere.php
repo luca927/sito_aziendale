@@ -1,59 +1,62 @@
 <?php
-// Recupera le assegnazioni operai di un cantiere
+header('Content-Type: application/json');
 
+require_once __DIR__ . '/../backend/auth.php';
 require_once __DIR__ . '/../backend/db.php';
-header('Content-Type: application/json; charset=utf-8');
 
 try {
-    $id_cantiere = isset($_GET['id_cantiere']) ? (int)$_GET['id_cantiere'] : null;
+    $id_cantiere = $_GET['id_cantiere'] ?? null;
     
     if (!$id_cantiere) {
-        throw new Exception("ID cantiere non fornito");
+        throw new Exception('ID Cantiere non fornito');
     }
-
-    $query = "
-        SELECT 
-            ac.id,
-            ac.id_dipendente,
-            ac.id_cantiere,
-            ac.ruolo_cantiere,
-            ac.ore_previste,
-            ac.ore_effettive,
-            ac.data_inizio,
-            ac.data_fine,
-            d.nome AS nome_dipendente,
-            d.cognome AS cognome_dipendente,
-            d.telefono
-        FROM assegnazioni_cantiere ac
-        JOIN dipendenti d ON ac.id_dipendente = d.id
-        WHERE ac.id_cantiere = ?
-        ORDER BY ac.data_inizio DESC
-    ";
     
-    $stmt = $conn->prepare($query);
+    // Query per ottenere le assegnazioni dipendenti al cantiere
+    $sql = "SELECT 
+                adc.id,
+                adc.id_dipendente,
+                adc.id_cantiere,
+                adc.ruolo_cantiere,
+                adc.ore_previste,
+                adc.data_inizio,
+                adc.data_fine,
+                d.id as dipendente_id,
+                d.nome as nome_dipendente,
+                d.cognome as cognome_dipendente
+            FROM assegnazioni_dipendenti_cantiere adc
+            LEFT JOIN dipendenti d ON adc.id_dipendente = d.id
+            WHERE adc.id_cantiere = ?";
     
+    $stmt = $conn->prepare($sql);
     if (!$stmt) {
-        throw new Exception("Errore prepare: " . $conn->error);
+        throw new Exception('Errore nella preparazione query: ' . $conn->error);
     }
     
-    $stmt->bind_param("i", $id_cantiere);
-    $stmt->execute();
+    $stmt->bind_param('i', $id_cantiere);
+    
+    if (!$stmt->execute()) {
+        throw new Exception('Errore nell\'esecuzione query: ' . $stmt->error);
+    }
     
     $result = $stmt->get_result();
-    $assegnazioni = [];
+    $data = [];
     
     while ($row = $result->fetch_assoc()) {
-        $assegnazioni[] = $row;
+        $data[] = $row;
     }
     
-    echo json_encode(['success' => true, 'data' => $assegnazioni]);
+    echo json_encode([
+        'success' => true,
+        'data' => $data
+    ]);
     
     $stmt->close();
     
 } catch (Exception $e) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
+    ]);
 }
-
-$conn->close();
 ?>

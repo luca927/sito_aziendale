@@ -1,48 +1,44 @@
 <?php
-// api/delete_mezzo_cantiere.php
-// Elimina un'assegnazione di un mezzo a un cantiere
+header('Content-Type: application/json');
 
+require_once __DIR__ . '/../backend/auth.php';
 require_once __DIR__ . '/../backend/db.php';
-header('Content-Type: application/json; charset=utf-8');
 
 try {
-    $data = json_decode(file_get_contents("php://input"), true);
-
-    $id = $data['id'] ?? null;
-    if (!$id) {
-        throw new Exception("ID assegnazione non fornito");
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    if (!$data || !isset($data['id'])) {
+        throw new Exception('ID non valido');
     }
-
-    $id = (int)$id;
-
-    $query = "DELETE FROM assegnazioni_mezzo WHERE id = ?";
-
-    $stmt = $conn->prepare($query);
-
+    
+    $id = $data['id'];
+    
+    // Elimina l'assegnazione mezzo al cantiere
+    $sql = "DELETE FROM assegnazioni_mezzo_cantiere WHERE id = ?";
+    
+    $stmt = $conn->prepare($sql);
     if (!$stmt) {
-        throw new Exception("Errore prepare: " . $conn->error);
+        throw new Exception('Errore nella preparazione query: ' . $conn->error);
     }
-
-    $stmt->bind_param("i", $id);
-
-    if ($stmt->execute()) {
-        echo json_encode([
-            "success" => true,
-            "message" => "Mezzo rimosso dal cantiere"
-        ]);
-    } else {
-        throw new Exception("Errore durante l'eliminazione: " . $stmt->error);
+    
+    $stmt->bind_param('i', $id);
+    
+    if (!$stmt->execute()) {
+        throw new Exception('Errore nell\'eliminazione: ' . $stmt->error);
     }
-
+    
+    echo json_encode([
+        'success' => true,
+        'message' => 'Assegnazione mezzo eliminata correttamente'
+    ]);
+    
     $stmt->close();
-
+    
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode([
-        "success" => false,
-        "error" => $e->getMessage()
+        'success' => false,
+        'error' => $e->getMessage()
     ]);
 }
-
-$conn->close();
 ?>

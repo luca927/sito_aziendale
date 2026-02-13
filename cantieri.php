@@ -46,17 +46,17 @@ include 'includes/header.php';
         </div>
 
         <!-- TABELLA CANTIERI -->
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
+        <div class="table-wrapper">
+            <table class="table table-striped table-hover table-compact">
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Nome</th>
                         <th>Indirizzo</th>
                         <th>Referente</th>
-                        <th>Data Inizio</th>
-                        <th>Data Fine</th>
-                        <th>Giorni Lavoro</th>
+                        <th>Inizio</th>
+                        <th>Fine</th>
+                        <th>Giorni</th>
                         <th>Stato</th>
                         <th>Operai</th>
                         <th>Mappa</th>
@@ -287,7 +287,7 @@ include 'includes/header.php';
 </div>
 
 <!-- MODALE AGGIUNGI OPERAIO -->
-<div id="modaleOperaio" class="modal-nested" style="display: none;">
+<div id="modaleOperaio" class="modal-nested">
     <div class="modal-nested-content">
         <h6 class="mb-3">Assegna Operaio</h6>
         
@@ -337,7 +337,7 @@ include 'includes/header.php';
 </div>
 
 <!-- MODALE AGGIUNGI MEZZO -->
-<div id="modaleMezzo" class="modal-nested" style="display: none;">
+<div id="modaleMezzo" class="modal-nested">
     <div class="modal-nested-content">
         <h6 class="mb-3">Assegna Mezzo</h6>
         
@@ -389,6 +389,165 @@ include 'includes/header.php';
 
 <!-- CSS MODALI NIDIFICATE -->
 <style>
+.table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.table-wrapper::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.table-compact {
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+.table-compact thead th {
+    padding: 0.75rem 0.5rem;
+    font-weight: 600;
+    white-space: nowrap;
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table-compact tbody td {
+    padding: 0.6rem 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.table-compact tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.table-compact th:first-child,
+.table-compact td:first-child {
+    width: 50px;
+    text-align: center;
+}
+
+.table-compact th:nth-child(2),
+.table-compact td:nth-child(2) {
+    min-width: 120px;
+}
+
+.table-compact th:nth-child(3),
+.table-compact td:nth-child(3) {
+    min-width: 150px;
+}
+
+.table-compact th:nth-child(4),
+.table-compact td:nth-child(4) {
+    min-width: 100px;
+}
+
+.table-compact th:nth-child(5),
+.table-compact td:nth-child(5) {
+    min-width: 90px;
+}
+
+.table-compact th:nth-child(6),
+.table-compact td:nth-child(6) {
+    min-width: 90px;
+}
+
+.table-compact th:nth-child(7),
+.table-compact td:nth-child(7) {
+    min-width: 100px;
+    font-size: 0.85rem;
+}
+
+.table-compact th:nth-child(8),
+.table-compact td:nth-child(8) {
+    min-width: 80px;
+}
+
+.table-compact th:nth-child(9),
+.table-compact td:nth-child(9) {
+    min-width: 70px;
+}
+
+.table-compact th:nth-child(10),
+.table-compact td:nth-child(10) {
+    min-width: 50px;
+    text-align: center;
+}
+
+.table-compact th:nth-child(11),
+.table-compact td:nth-child(11) {
+    min-width: 90px;
+    position: sticky;
+    right: 0;
+    background-color: white;
+}
+
+.table-compact tbody tr:hover td:nth-child(11) {
+    background-color: #f5f5f5;
+}
+
+.btn-sm {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.8rem;
+}
+
+.btn-xs {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.75rem;
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.35rem 0.65rem;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal.show {
+    display: flex !important;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    z-index: 1050;
+}
+
+/* MODAL ANNIDATI - OPERAI E MEZZI */
 .modal-nested {
     position: fixed;
     top: 50%;
@@ -397,24 +556,17 @@ include 'includes/header.php';
     background: white;
     border-radius: 8px;
     padding: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    z-index: 1001;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.4);
+    z-index: 2050;
     max-width: 600px;
     width: 90%;
     max-height: 80vh;
     overflow-y: auto;
+    display: none;
 }
 
-.modal-nested-content {
-    width: 100%;
-}
-
-.modal-nested-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    border-top: 1px solid #e9ecef;
-    padding-top: 15px;
+.modal-nested.visible {
+    display: block !important;
 }
 
 .modal-nested::before {
@@ -424,8 +576,27 @@ include 'includes/header.php';
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0,0,0,0.5);
-    z-index: -1;
+    background: rgba(0,0,0,0.3);
+    z-index: 2049;
+    display: none;
+}
+
+.modal-nested.visible::before {
+    display: block;
+}
+
+.modal-nested-content {
+    width: 100%;
+    position: relative;
+    z-index: 2051;
+}
+
+.modal-nested-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-top: 1px solid #e9ecef;
+    padding-top: 15px;
 }
 </style>
 
@@ -483,7 +654,7 @@ function rilevaPosizioneGPS() {
     );
 }  
 
-// --- CARICA CANTIERI ---
+// --- CARICA CANTIERI CON NOMI OPERAI ---
 async function caricaCantieri() {
     const res = await fetch("api/get_cantieri.php");
     cantieriGlobali = await res.json();
@@ -545,9 +716,16 @@ function popolareMezzi() {
     });
 }
 
+// --- MOSTRA TABELLA CANTIERI CON NOMI OPERAI ---
 // --- MOSTRA TABELLA CANTIERI ---
 function mostraCantieri(lista) {
     const tbody = document.getElementById("cantieriTable");
+    
+    if (!lista || lista.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center text-muted py-4">Nessun cantiere trovato</td></tr>';
+        return;
+    }
+
     tbody.innerHTML = "";
 
     lista.forEach(c => {
@@ -557,26 +735,25 @@ function mostraCantieri(lista) {
                  class="btn btn-outline-primary btn-sm">
                 <i class="fa-solid fa-location-dot"></i>
              </a>`
-            : `<span class="text-muted small">N/D</span>`;
+            : `<span class="text-muted small">-</span>`;
 
         tbody.innerHTML += `
             <tr>
-                <td>${c.id}</td>
+                <td><small>${c.id}</small></td>
                 <td><strong>${c.nome}</strong></td>
                 <td>${c.indirizzo || '-'}</td>
                 <td>${c.referente || '-'}</td>
-                <td>${c.data_inizio || '-'}</td>
-                <td>${c.data_fine || '-'}</td>
-                <td>${c.giorni_lavoro && c.giorni_lavoro.trim() !== "" ? c.giorni_lavoro : '-'}</td>
+                <td><small>${c.data_inizio || '-'}</small></td>
+                <td><small>${c.data_fine || '-'}</small></td>
+                <td><small>${c.giorni_lavoro && c.giorni_lavoro.trim() !== "" ? c.giorni_lavoro : '-'}</small></td>
                 <td><span class="badge bg-primary">${c.stato}</span></td>
-                <td><span class="badge bg-info">${c.numero_operai || 0}</span></td>
+                <td><small>-</small></td>
                 <td class="text-center">${linkMappa}</td>
-
                 <td class="text-nowrap">
-                    <button class="btn btn-warning btn-sm me-1" onclick="apriModificaCantiere(${c.id})">
+                    <button class="btn btn-warning btn-sm me-1" onclick="apriModificaCantiere(${c.id})" title="Modifica">
                         <i class="fa-solid fa-pen"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteCantiere(${c.id})">
+                    <button class="btn btn-danger btn-sm" onclick="deleteCantiere(${c.id})" title="Elimina">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </td>
@@ -712,52 +889,60 @@ async function caricaOperaiCantiere(id_cantiere) {
 }
 
 document.getElementById('aggiungiOperaio').addEventListener('click', function() {
-    document.getElementById('modaleOperaio').style.display = 'block';
+    const idCantiere = document.getElementById('cantiere_id').value;
+    if (!idCantiere) {
+        alert('Salva prima il cantiere per aggiungere operai');
+        return;
+    }
+    document.getElementById('modaleOperaio').classList.add('visible');
 });
 
 function chiudiModaleOperaio() {
-    document.getElementById('modaleOperaio').style.display = 'none';
+    document.getElementById('modaleOperaio').classList.remove('visible');
     document.getElementById('formOperaio').reset();
 }
 
-document.getElementById('formOperaio').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const idCantiere = document.getElementById('cantiere_id').value;
-    const idDip = document.getElementById('selezionaOperaio').value;
-    
-    if (!idDip) {
-        alert('Seleziona un operaio');
-        return;
-    }
-    
-    const payload = {
-        id_dipendente: idDip,
-        id_cantiere: idCantiere,
-        ruolo_cantiere: document.getElementById('ruoloOperaio').value,
-        ore_previste: document.getElementById('oreOperaio').value || null,
-        data_inizio: document.getElementById('dataInizioOp').value || null,
-        data_fine: document.getElementById('dataFineOp').value || null
-    };
-    
-    try {
-        const res = await fetch('api/add_dipendente_cantiere.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        });
+document.addEventListener('submit', async function(e) {
+    if (e.target.id === 'formOperaio') {
+        e.preventDefault();
         
-        const result = await res.json();
+        const idCantiere = document.getElementById('cantiere_id').value;
+        const idDip = document.getElementById('selezionaOperaio').value;
         
-        if (result.success) {
-            chiudiModaleOperaio();
-            caricaOperaiCantiere(idCantiere);
-            alert('Operaio assegnato!');
-        } else {
-            alert('Errore: ' + result.error);
+        if (!idDip) {
+            alert('Seleziona un operaio');
+            return;
         }
-    } catch (error) {
-        console.error("Errore:", error);
+        
+        const payload = {
+            id_dipendente: idDip,
+            id_cantiere: idCantiere,
+            ruolo_cantiere: document.getElementById('ruoloOperaio').value,
+            ore_previste: document.getElementById('oreOperaio').value || null,
+            data_inizio: document.getElementById('dataInizioOp').value || null,
+            data_fine: document.getElementById('dataFineOp').value || null
+        };
+        
+        try {
+            const res = await fetch('api/add_dipendente_cantiere.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await res.json();
+            
+            if (result.success) {
+                chiudiModaleOperaio();
+                caricaOperaiCantiere(idCantiere);
+                alert('Operaio assegnato!');
+            } else {
+                alert('Errore: ' + result.error);
+            }
+        } catch (error) {
+            console.error("Errore:", error);
+            alert('Errore nella richiesta: ' + error.message);
+        }
     }
 });
 
@@ -824,52 +1009,60 @@ async function caricaMezziCantiere(id_cantiere) {
 }
 
 document.getElementById('aggiungiMezzo').addEventListener('click', function() {
-    document.getElementById('modaleMezzo').style.display = 'block';
+    const idCantiere = document.getElementById('cantiere_id').value;
+    if (!idCantiere) {
+        alert('Salva prima il cantiere per aggiungere mezzi');
+        return;
+    }
+    document.getElementById('modaleMezzo').classList.add('visible');
 });
 
 function chiudiModaleMezzo() {
-    document.getElementById('modaleMezzo').style.display = 'none';
+    document.getElementById('modaleMezzo').classList.remove('visible');
     document.getElementById('formMezzo').reset();
 }
 
-document.getElementById('formMezzo').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const idCantiere = document.getElementById('cantiere_id').value;
-    const idMezzo = document.getElementById('selezionaMezzo').value;
-    
-    if (!idMezzo) {
-        alert('Seleziona un mezzo');
-        return;
-    }
-    
-    const payload = {
-        id_mezzo: idMezzo,
-        id_cantiere: idCantiere,
-        id_dipendente: document.getElementById('selezionaOperatoreMezzo').value || null,
-        ora_inizio: document.getElementById('dataInizioMezzo').value || new Date().toISOString().slice(0, 16),
-        km_inizio: document.getElementById('kmInizioMezzo').value || null,
-        note: document.getElementById('noteMezzo').value || null
-    };
-    
-    try {
-        const res = await fetch('api/add_assegnazioni_mezzo_cantiere.php', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        });
+document.addEventListener('submit', async function(e) {
+    if (e.target.id === 'formMezzo') {
+        e.preventDefault();
         
-        const result = await res.json();
+        const idCantiere = document.getElementById('cantiere_id').value;
+        const idMezzo = document.getElementById('selezionaMezzo').value;
         
-        if (result.success) {
-            chiudiModaleMezzo();
-            caricaMezziCantiere(idCantiere);
-            alert('Mezzo assegnato!');
-        } else {
-            alert('Errore: ' + result.error);
+        if (!idMezzo) {
+            alert('Seleziona un mezzo');
+            return;
         }
-    } catch (error) {
-        console.error("Errore:", error);
+        
+        const payload = {
+            id_mezzo: idMezzo,
+            id_cantiere: idCantiere,
+            id_dipendente: document.getElementById('selezionaOperatoreMezzo').value || null,
+            ora_inizio: document.getElementById('dataInizioMezzo').value || new Date().toISOString().slice(0, 16),
+            km_inizio: document.getElementById('kmInizioMezzo').value || null,
+            note: document.getElementById('noteMezzo').value || null
+        };
+        
+        try {
+            const res = await fetch('api/add_assegnazioni_mezzo_cantiere.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            
+            const result = await res.json();
+            
+            if (result.success) {
+                chiudiModaleMezzo();
+                caricaMezziCantiere(idCantiere);
+                alert('Mezzo assegnato!');
+            } else {
+                alert('Errore: ' + result.error);
+            }
+        } catch (error) {
+            console.error("Errore:", error);
+            alert('Errore nella richiesta: ' + error.message);
+        }
     }
 });
 
@@ -899,9 +1092,20 @@ async function eliminaMezzoCantiere(id) {
 document.getElementById("closeCantiereModal").onclick =
 document.getElementById("cancelCantiereModal").onclick = () => {
     cantiereModal.classList.remove("show");
-    document.getElementById('modaleOperaio').style.display = 'none';
-    document.getElementById('modaleMezzo').style.display = 'none';
+    document.getElementById('modaleOperaio').classList.remove('visible');
+    document.getElementById('modaleMezzo').classList.remove('visible');
+    document.getElementById('formOperaio').reset();
+    document.getElementById('formMezzo').reset();
 };
+
+// Chiudi anche quando clicchi fuori dal modal principale
+document.addEventListener('click', (e) => {
+    if (e.target === cantiereModal) {
+        cantiereModal.classList.remove("show");
+        document.getElementById('modaleOperaio').classList.remove('visible');
+        document.getElementById('modaleMezzo').classList.remove('visible');
+    }
+});
 
 // --- SALVA CANTIERE ---
 cantiereForm.onsubmit = async (e) => {
@@ -941,7 +1145,6 @@ cantiereForm.onsubmit = async (e) => {
     cantiereModal.classList.remove("show");
     caricaCantieri();
 } else {
-    // Mostra error o message se error non esiste
     alert("Errore: " + (result.error || result.message || "Errore sconosciuto"));
 }
 };
@@ -985,6 +1188,11 @@ function exportCantieri(format) {
 
 // --- AVVIO ---
 document.addEventListener("DOMContentLoaded", () => {
+    // Assicurati che i modal siano nascosti all'inizio
+    cantiereModal.classList.remove("show");
+    document.getElementById('modaleOperaio').classList.remove('visible');
+    document.getElementById('modaleMezzo').classList.remove('visible');
+    
     caricaCantieri();
     caricaDipendenti();
     caricaMezzi();

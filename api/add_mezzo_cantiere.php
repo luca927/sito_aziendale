@@ -1,64 +1,64 @@
 <?php
-// api/assegnazioni/mezzi_cantieri_add.php
-// Assegna un mezzo a un cantiere con un dipendente
+header('Content-Type: application/json');
 
+require_once __DIR__ . '/../backend/auth.php';
 require_once __DIR__ . '/../backend/db.php';
 
-header('Content-Type: application/json; charset=utf-8');
-
 try {
-    $input = json_decode(file_get_contents("php://input"), true);
+    $data = json_decode(file_get_contents('php://input'), true);
     
-    if (!$input || !isset($input['id_mezzo']) || !isset($input['id_cantiere'])) {
-        throw new Exception("Dati obbligatori mancanti");
+    if (!$data) {
+        throw new Exception('Dati non validi');
     }
     
-    $id_mezzo = (int)$input['id_mezzo'];
-    $id_cantiere = (int)$input['id_cantiere'];
-    $id_dipendente = isset($input['id_dipendente']) ? (int)$input['id_dipendente'] : null;
-    $ora_inizio = $input['ora_inizio'] ?? date('Y-m-d H:i:s');
-    $km_inizio = isset($input['km_inizio']) ? (int)$input['km_inizio'] : null;
-    $note = $input['note'] ?? null;
+    $id_mezzo = $data['id_mezzo'] ?? null;
+    $id_cantiere = $data['id_cantiere'] ?? null;
+    $id_dipendente = $data['id_dipendente'] ?? null;
+    $ora_inizio = $data['ora_inizio'] ?? null;
+    $km_inizio = $data['km_inizio'] ?? null;
+    $note = $data['note'] ?? null;
     
-    // Verifica mezzo
-    $checkMezzo = $conn->prepare("SELECT id FROM mezzi WHERE id = ?");
-    $checkMezzo->bind_param("i", $id_mezzo);
-    $checkMezzo->execute();
-    if ($checkMezzo->get_result()->num_rows === 0) {
-        throw new Exception("Mezzo non trovato");
+    if (!$id_mezzo || !$id_cantiere) {
+        throw new Exception('Mezzo e Cantiere sono obbligatori');
     }
     
-    // Verifica cantiere
-    $checkCant = $conn->prepare("SELECT id FROM cantieri WHERE id = ?");
-    $checkCant->bind_param("i", $id_cantiere);
-    $checkCant->execute();
-    if ($checkCant->get_result()->num_rows === 0) {
-        throw new Exception("Cantiere non trovato");
+    // Inserisci l'assegnazione mezzo al cantiere
+    $sql = "INSERT INTO assegnazioni_mezzo_cantiere 
+            (id_mezzo, id_cantiere, id_dipendente, ora_inizio, km_inizio, note) 
+            VALUES (?, ?, ?, ?, ?, ?)";
+    
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        throw new Exception('Errore nella preparazione query: ' . $conn->error);
     }
     
-    $query = "
-        INSERT INTO assegnazioni_mezzo 
-        (id_mezzo, id_dipendente, id_cantiere, ora_inizio, km_inizio, note)
-        VALUES (?, ?, ?, ?, ?, ?)
-    ";
+    $stmt->bind_param(
+        'iissds',
+        $id_mezzo,
+        $id_cantiere,
+        $id_dipendente,
+        $ora_inizio,
+        $km_inizio,
+        $note
+    );
     
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("iiisis", $id_mezzo, $id_dipendente, $id_cantiere, 
-                      $ora_inizio, $km_inizio, $note);
-    
-    if ($stmt->execute()) {
-        echo json_encode([
-            'success' => true,
-            'message' => 'Mezzo assegnato',
-            'id' => $conn->insert_id
-        ]);
-    } else {
-        throw new Exception("Errore durante l'inserimento");
+    if (!$stmt->execute()) {
+        throw new Exception('Errore nell\'inserimento: ' . $stmt->error);
     }
+    
+    echo json_encode([
+        'success' => true,
+        'message' => 'Mezzo assegnato correttamente',
+        'id' => $stmt->insert_id
+    ]);
+    
+    $stmt->close();
     
 } catch (Exception $e) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'error' => $e->getMessage()
+    ]);
 }
-$conn->close();
 ?>
