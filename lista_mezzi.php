@@ -64,12 +64,12 @@ include 'includes/header.php';
   <div class="modal-content">
     <div class="modal-header">
       <h3 id="modalTitle">Nuovo Mezzo</h3>
-      <button class="close-btn" id="closeModalBtn" onclick="closeMezzoModal()">&times;</button>
+      <button class="close-btn" id="closeModalBtn" onclick="closeMezzoModal(true)">&times;</button>
     </div>
 
-    <form id="mezzoForm" novalidate>
+    <input type="hidden" id="mezzo_id" name="id">
 
-      <input type="hidden" id="mezzo_id" name="id">
+    <form id="mezzoForm" novalidate>
 
       <!-- NAV TABS -->
       <ul class="nav nav-tabs" id="mezzoTabs">
@@ -214,7 +214,7 @@ include 'includes/header.php';
 
       <!-- FOOTER -->
       <div class="modal-footer mt-4">
-        <button type="button" class="btn btn-secondary" onclick="closeMezzoModal()">Annulla</button>
+        <button type="button" class="btn btn-secondary" onclick="closeMezzoModal(true)">Annulla</button>
         <button type="submit" class="btn btn-primary">Salva Mezzo</button>
       </div>
 
@@ -309,7 +309,7 @@ include 'includes/header.php';
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  z-index: 1001;
+  z-index: 1050;
   max-width: 600px;
   width: 90%;
   max-height: 80vh;
@@ -463,10 +463,6 @@ document.getElementById('openModalBtn').onclick = () => {
   modal.classList.add('show');
 };
 
-// 5. Chiusura modale
-document.getElementById('closeModalBtn').onclick = () => {
-  modal.classList.remove('show');
-};
 
 // 6. Invio Form (Salvataggio o Aggiornamento)
 form.onsubmit = async (e) => {
@@ -550,13 +546,22 @@ async function caricaManutenzioni(id_mezzo) {
 }
 
 document.getElementById('aggiungiManutenzione').addEventListener('click', function() {
+  closeMezzoModal(false); // Chiudi la modale principale per evitare sovrapposizioni
   document.getElementById('modaleManutenzione').style.display = 'block';
   document.getElementById('dataManutenzione').valueAsDate = new Date();
 });
 
+// Quando chiudi dalla X o Annulla, resetta il form
+document.getElementById('closeModalBtn').onclick = () => {
+  closeMezzoModal(true); // true = resetta il form
+};
+
 function chiudiModaleManutenzione() {
   document.getElementById('modaleManutenzione').style.display = 'none';
   document.getElementById('formManutenzione').reset();
+
+  //riapri la modale principale con i dati del mezzo
+  modal.classList.add('show');
 }
 
 document.getElementById('formManutenzione').addEventListener('submit', async function(e) {
@@ -664,11 +669,15 @@ async function elimina(id) {
   }
 }
 
-function closeMezzoModal() {
+function closeMezzoModal(resetForm) {
   modal.classList.remove('show');
-  form.reset();
-  document.getElementById('mezzo_id').value = '';
+  //form.reset();
   document.getElementById('modaleManutenzione').style.display = 'none';
+
+  if (resetForm) {
+    form.reset();
+    document.getElementById('mezzo_id').value = '';
+  }
 }
 
 // Avvio iniziale
