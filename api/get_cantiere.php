@@ -5,39 +5,15 @@ require_once __DIR__ . '/../backend/auth.php';
 require_once __DIR__ . '/../backend/db.php';
 
 try {
-    $sql = "SELECT 
-            c.id,
-            c.nome,
-            c.indirizzo,
-            c.referente,
-            c.giorni_lavoro,
-            c.data_inizio,
-            c.data_fine,
-            c.note,
-            c.coordinatore_sicurezza,
-            c.piano_sicurezza,
-            c.stato,
-            c.lat,
-            c.lng,
-            c.created_at,
-            c.updated_at,
-            COALESCE(
-                GROUP_CONCAT(
-                    DISTINCT CONCAT(d.nome, ' ', d.cognome)
-                    SEPARATOR ', '
-                ),
-                ''
-            ) AS operai
-        FROM cantieri c
-        LEFT JOIN assegnazioni_dipendenti_cantiere adc 
-            ON c.id = adc.id_cantiere
-        LEFT JOIN dipendenti d 
-            ON d.id = adc.id_dipendente
-        GROUP BY c.id
-        ORDER BY c.data_inizio DESC";
+    // Usiamo la subquery che si è rivelata più affidabile nel tuo ambiente
+    $sql = "SELECT c.*, 
+            (SELECT GROUP_CONCAT(DISTINCT CONCAT(d.nome, ' ', d.cognome) SEPARATOR ', ') 
+             FROM assegnazioni_dipendenti_cantiere adc 
+             JOIN dipendenti d ON adc.id_dipendente = d.id 
+             WHERE adc.id_cantiere = c.id) as operai
+            FROM cantieri c
+            ORDER BY c.data_inizio DESC";
 
-
-    
     $result = $conn->query($sql);
     
     if (!$result) {
@@ -59,4 +35,3 @@ try {
     ]);
 }
 ?>
-

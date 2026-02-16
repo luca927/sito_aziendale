@@ -730,6 +730,7 @@ function popolareMezzi() {
 // --- MOSTRA TABELLA CANTIERI ---
 function mostraCantieri(lista) {
     const tbody = document.getElementById("cantieriTable");
+    console.log("Esempio cantiere:", lista[0]);
     
     if (!lista || lista.length === 0) {
         tbody.innerHTML = '<tr><td colspan="11" class="text-center text-muted py-4">Nessun cantiere trovato</td></tr>';
@@ -739,6 +740,7 @@ function mostraCantieri(lista) {
     tbody.innerHTML = "";
 
     lista.forEach(c => {
+        console.log("Chiavi disponibili nel cantiere:", Object.keys(c));
         const linkMappa = (c.lat && c.lng)
             ? `<a href="https://www.google.com/maps?q=${c.lat},${c.lng}" 
                  target="_blank" 
@@ -757,7 +759,7 @@ function mostraCantieri(lista) {
                 <td><small>${c.data_fine || '-'}</small></td>
                 <td><small>${c.giorni_lavoro?.trim() || '-'}</small></td>
                 <td><span class="badge bg-primary">${c.stato}</span></td>
-                <td><small>${c.operai?.trim() || 'Nessun operaio'}</small></td>
+                <td><small>${c.operai || 'Nessun operaio'}</small></td>
                 <td class="text-center">${linkMappa}</td>
                 <td class="text-nowrap">
                     <button class="btn btn-warning btn-sm me-1" onclick="apriModificaCantiere(${c.id})" title="Modifica">
