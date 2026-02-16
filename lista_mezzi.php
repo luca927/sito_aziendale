@@ -309,11 +309,16 @@ include 'includes/header.php';
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  z-index: 1050;
+  z-index: 2050;
   max-width: 600px;
   width: 90%;
   max-height: 80vh;
   overflow-y: auto;
+  display: none; /* Nascosta di default */
+}
+
+.modal-nested.visible {
+  display: block; /* Mostrata quando ha classe 'visible' */
 }
 
 .modal-nested-content {

@@ -207,8 +207,7 @@ include 'includes/header.php';
                     <table class="table table-sm table-hover">
                         <thead class="table-light">
                             <tr>
-                                <th>Nome</th>
-                                <th>Cognome</th>
+                                <th>Operaio</th>
                                 <th>Ruolo</th>
                                 <th>Inizio</th>
                                 <th>Fine</th>
@@ -747,7 +746,7 @@ function mostraCantieri(lista) {
                 <td><small>${c.data_fine || '-'}</small></td>
                 <td><small>${c.giorni_lavoro && c.giorni_lavoro.trim() !== "" ? c.giorni_lavoro : '-'}</small></td>
                 <td><span class="badge bg-primary">${c.stato}</span></td>
-                <td><small>-</small></td>
+                <td><small>${c.nome_operai || '-'}</small></td>
                 <td class="text-center">${linkMappa}</td>
                 <td class="text-nowrap">
                     <button class="btn btn-warning btn-sm me-1" onclick="apriModificaCantiere(${c.id})" title="Modifica">
@@ -842,12 +841,19 @@ function apriModificaCantiere(id) {
 
     document.getElementById("cantiereModalTitle").innerText = "Modifica Cantiere: " + c.nome;
     
+    // AGGIUNGI QUESTE RIGHE - Resetta le tab
+    document.querySelector("#cantiereTabs .nav-link.active")?.classList.remove("active");
+    document.querySelector("#cantiereTabs .nav-link[data-tab='dati']").classList.add("active");
+    document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+    document.getElementById("tab-dati").classList.add("active");
+    
     // Carica operai e mezzi
     caricaOperaiCantiere(id);
     caricaMezziCantiere(id);
 
     cantiereModal.classList.add("show");
 }
+
 
 // --- OPERAI CANTIERE ---
 async function caricaOperaiCantiere(id_cantiere) {
@@ -859,43 +865,55 @@ async function caricaOperaiCantiere(id_cantiere) {
         tbody.innerHTML = '';
         
         if (!data.success || data.data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nessun operaio</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nessun operaio assegnato</td></tr>';
             return;
         }
         
-        data.data.forEach(op => {
+        data.data.forEach((op) => {
             const inizio = new Date(op.data_inizio).toLocaleDateString('it-IT');
             const fine = op.data_fine ? new Date(op.data_fine).toLocaleDateString('it-IT') : '-';
+            const nomeCompleto = `${op.nome_dipendente} ${op.cognome_dipendente}`.trim();
             
-            tbody.innerHTML += `
-                <tr>
-                    <td>${op.nome_dipendente}</td>
-                    <td>${op.cognome_dipendente || '-'}</td>
-                    <td>${op.ruolo_cantiere || '-'}</td>
-                    <td>${inizio}</td>
-                    <td>${fine}</td>
-                    <td>${op.ore_previste || '-'}</td>
-                    <td>
-                        <button class="btn btn-xs btn-danger" onclick="eliminaOperaioCantiere(${op.id})">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
+            const tr = document.createElement('tr');
+            
+            tr.appendChild(createTd(nomeCompleto)); // Nome e cognome insieme
+            tr.appendChild(createTd(op.ruolo_cantiere || '-'));
+            tr.appendChild(createTd(inizio));
+            tr.appendChild(createTd(fine));
+            tr.appendChild(createTd(op.ore_previste || '-'));
+            
+            const tdBtn = document.createElement('td');
+            tdBtn.innerHTML = `<button class="btn btn-xs btn-danger" onclick="eliminaOperaioCantiere(${op.id})">
+                <i class="fa-solid fa-trash"></i>
+            </button>`;
+            tr.appendChild(tdBtn);
+            
+            tbody.appendChild(tr);
         });
+        
     } catch (error) {
-        console.error("Errore:", error);
+        console.error("ERRORE GRAVE:", error);
     }
+}
+
+function createTd(content) {
+    const td = document.createElement('td');
+    td.textContent = content;
+    return td;
 }
 
 document.getElementById('aggiungiOperaio').addEventListener('click', function() {
     const idCantiere = document.getElementById('cantiere_id').value;
+    
+    // ✅ VERIFICA PRIMA di aprire il modale
     if (!idCantiere) {
-        alert('Salva prima il cantiere per aggiungere operai');
+        alert('⚠️ Salva prima il cantiere!');
         return;
     }
+    
     document.getElementById('modaleOperaio').classList.add('visible');
 });
+
 
 function chiudiModaleOperaio() {
     document.getElementById('modaleOperaio').classList.remove('visible');
@@ -935,6 +953,7 @@ document.addEventListener('submit', async function(e) {
             if (result.success) {
                 chiudiModaleOperaio();
                 caricaOperaiCantiere(idCantiere);
+                caricaCantieri();
                 alert('Operaio assegnato!');
             } else {
                 alert('Errore: ' + result.error);
@@ -1055,6 +1074,7 @@ document.addEventListener('submit', async function(e) {
             if (result.success) {
                 chiudiModaleMezzo();
                 caricaMezziCantiere(idCantiere);
+                caricaCantieri();
                 alert('Mezzo assegnato!');
             } else {
                 alert('Errore: ' + result.error);

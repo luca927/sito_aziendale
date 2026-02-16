@@ -21,7 +21,7 @@ try {
                 c.lng,
                 c.created_at,
                 c.updated_at,
-                COUNT(DISTINCT adc.id_dipendente) as numero_operai
+                COUNT(DISTINCT adc.id_dipendente) as nome_operai
             FROM cantieri c
             LEFT JOIN assegnazioni_dipendenti_cantiere adc ON c.id = adc.id_cantiere
             GROUP BY c.id
@@ -48,3 +48,4 @@ try {
     ]);
 }
 ?>
+

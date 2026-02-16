@@ -299,7 +299,7 @@ require_once __DIR__ . '/backend/auth.php'; // Protegge la pagina
 </div>
 
 <!-- MODALE AGGIUNGI DOCUMENTO -->
-<div id="modaleDocumento" class="modal-nested" style="display: none;">
+<div id="modaleDocumento" class="modal-nested">
   <div class="modal-nested-content">
     <h6 class="mb-3">Aggiungi Documento</h6>
     
@@ -347,7 +347,7 @@ require_once __DIR__ . '/backend/auth.php'; // Protegge la pagina
 </div>
 
 <!-- MODALE AGGIUNGI CORSO -->
-<div id="modaleCorso" class="modal-nested" style="display: none;">
+<div id="modaleCorso" class="modal-nested">
   <div class="modal-nested-content">
     <h6 class="mb-3">Aggiungi Corso</h6>
     
@@ -408,7 +408,7 @@ require_once __DIR__ . '/backend/auth.php'; // Protegge la pagina
 </div>
 
 <!-- MODALE AGGIUNGI ASSEGNAZIONE -->
-<div id="modaleAssegnamento" class="modal-nested" style="display: none;">
+<div id="modaleAssegnamento" class="modal-nested">
   <div class="modal-nested-content">
     <h6 class="mb-3">Assegna a Cantiere</h6>
     
@@ -459,43 +459,84 @@ require_once __DIR__ . '/backend/auth.php'; // Protegge la pagina
 
 <!-- CSS MODALI NIDIFICATE -->
 <style>
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal.show {
+    display: flex !important;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 8px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    z-index: 1050;
+}
+
+/* MODAL ANNIDATI - OPERAI E MEZZI */
 .modal-nested {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  z-index: 1001;
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 25px rgba(0,0,0,0.4);
+    z-index: 2050;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    display: none;
 }
 
-.modal-nested-content {
-  width: 100%;
-}
-
-.modal-nested-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  border-top: 1px solid #e9ecef;
-  padding-top: 15px;
+.modal-nested.visible {
+    display: block !important;
 }
 
 .modal-nested::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: -1;
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 2049;
+    display: none;
+}
+
+.modal-nested.visible::before {
+    display: block;
+}
+
+.modal-nested-content {
+    width: 100%;
+    position: relative;
+    z-index: 2051;
+}
+
+.modal-nested-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    border-top: 1px solid #e9ecef;
+    padding-top: 15px;
 }
 </style>
 
@@ -616,23 +657,23 @@ function apriModifica(id) {
     // Anagrafica
     document.getElementById('dipendente_nome').value = item.nome || '';
     document.getElementById('dipendente_cognome').value = item.cognome || '';
-    document.getElementById('data_nascita').value = item.data_nascita || '';
+    document.getElementById('data_nascita').value = item.dataDiNascita || '';  // Colonna DB: dataDiNascita
     document.getElementById('sesso').value = item.sesso || '';
     document.getElementById('stato_civile').value = item.stato_civile || '';
-    document.getElementById('esperienze').value = item.esperienze || '';
-    document.getElementById('competenze').value = item.competenze || '';
+    document.getElementById('esperienze').value = item.Esperienze || '';
+    document.getElementById('competenze').value = item.Competenze || '';
     document.getElementById('livello_esperienza').value = item.livello_esperienza || '';
     
     // Contatti
     document.getElementById('telefono').value = item.telefono || '';
-    document.getElementById('email').value = item.email || '';
-    document.getElementById('residenza').value = item.residenza || '';
+    document.getElementById('email').value = item.recapitieMail || '';  // Colonna DB: recapitieMail
+    document.getElementById('residenza').value = item.indirizzoResidenza || '';  // Colonna DB: indirizzoResidenza
     
     // Documenti
     document.getElementById('codice_fiscale').value = item.codice_fiscale || '';
     
     // Formazione
-    document.getElementById('formazione').value = item.formazione || '';
+    document.getElementById('formazione').value = item.Corsi_e_Formazione || '';  // Colonna DB: Corsi_e_Formazione
     
     // Carica dati dalle tabelle di relazione
     caricaDocumenti(item.id);
@@ -682,11 +723,11 @@ async function caricaDocumenti(id_dipendente) {
 }
 
 document.getElementById('aggiungiDocumento').addEventListener('click', function() {
-  document.getElementById('modaleDocumento').style.display = 'block';
+  document.getElementById('modaleDocumento').classList.add('visible');
 });
 
 function chiudiModaleDocumento() {
-  document.getElementById('modaleDocumento').style.display = 'none';
+  document.getElementById('modaleDocumento').classList.remove('visible');
   document.getElementById('formDocumento').reset();
 }
 
@@ -789,11 +830,11 @@ async function caricaCorsi(id_dipendente) {
 }
 
 document.getElementById('aggiungiCorso').addEventListener('click', function() {
-  document.getElementById('modaleCorso').style.display = 'block';
+  document.getElementById('modaleCorso').classList.add('visible');
 });
 
 function chiudiModaleCorso() {
-  document.getElementById('modaleCorso').style.display = 'none';
+  document.getElementById('modaleCorso').classList.remove('visible');
   document.getElementById('formCorso').reset();
 }
 
@@ -863,7 +904,7 @@ async function eliminaCorso(id) {
 // --- ASSEGNAZIONI ---
 async function caricaAssegnazioni(id_dipendente) {
   try {
-    const res = await fetch(`api/get_dipendente_cantiere.php?id_dipendente=${id_dipendente}`);
+    const res = await fetch(`api/get_dipendenti_cantieri.php?id_dipendente=${id_dipendente}`);
     const data = await res.json();
     
     const tbody = document.getElementById('assegnamentiBody');
@@ -901,11 +942,11 @@ async function caricaAssegnazioni(id_dipendente) {
 
 document.getElementById('aggiungiAssegnamento').addEventListener('click', function() {
   caricaCantieri();
-  document.getElementById('modaleAssegnamento').style.display = 'block';
+  document.getElementById('modaleAssegnamento').classList.add('visible');
 });
 
 function chiudiModaleAssegnamento() {
-  document.getElementById('modaleAssegnamento').style.display = 'none';
+  document.getElementById('modaleAssegnamento').classList.remove('visible');
   document.getElementById('formAssegnamento').reset();
 }
 
@@ -998,13 +1039,20 @@ form.onsubmit = async (e) => {
       body: JSON.stringify(payload)
     });
 
-    const result = await res.json();
-    if (result.success) {
-      alert(idValue ? "Aggiornato!" : "Aggiunto!");
-      closeDipModal();
-      loadDipendenti();
-    } else {
-      alert("Errore: " + result.error);
+    const text = await res.text(); // Prendi il testo, non JSON
+    console.log("RISPOSTA RAW:", text); // LOG l'errore
+    
+    try {
+      const result = JSON.parse(text);
+      if (result.success) {
+        alert(idValue ? "Aggiornato!" : "Aggiunto!");
+        closeDipModal();
+        loadDipendenti();
+      } else {
+        alert("Errore: " + result.error);
+      }
+    } catch (e) {
+      alert("Errore server (vedi console): " + text);
     }
   } catch (err) {
     console.error("Errore invio:", err);
@@ -1017,10 +1065,20 @@ function closeDipModal() {
   form.reset();
   document.getElementById('dipendente_id').value = '';
   
-  // Chiudi anche le modali nidificate
-  document.getElementById('modaleDocumento').style.display = 'none';
-  document.getElementById('modaleCorso').style.display = 'none';
-  document.getElementById('modaleAssegnamento').style.display = 'none';
+  // Chiudi e pulisci anche le modali nidificate
+  document.getElementById('modaleDocumento').classList.remove('visible');
+  document.getElementById('modaleCorso').classList.remove('visible');
+  document.getElementById('modaleAssegnamento').classList.remove('visible');
+  
+  // Pulisci i form
+  document.getElementById('formDocumento').reset();
+  document.getElementById('formCorso').reset();
+  document.getElementById('formAssegnamento').reset();
+  
+  // Pulisci le tabelle
+  document.getElementById('documentiBody').innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nessun documento</td></tr>';
+  document.getElementById('corsiBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nessun corso</td></tr>';
+  document.getElementById('assegnamentiBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nessuna assegnazione</td></tr>';
 }
 
 async function eliminaDipendente(id) {

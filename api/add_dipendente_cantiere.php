@@ -11,12 +11,12 @@ try {
         throw new Exception('Dati non validi');
     }
     
-    $id_dipendente = $data['id_dipendente'] ?? null;
-    $id_cantiere = $data['id_cantiere'] ?? null;
-    $ruolo_cantiere = $data['ruolo_cantiere'] ?? null;
-    $ore_previste = $data['ore_previste'] ?? null;
-    $data_inizio = $data['data_inizio'] ?? null;
-    $data_fine = $data['data_fine'] ?? null;
+    $id_dipendente = $data['id_dipendente'] ?? null;      // ✅ Con underscore
+    $id_cantiere = $data['id_cantiere'] ?? null;          // ✅ Con underscore
+    $ruolo_cantiere = $data['ruolo_cantiere'] ?? null;    // ✅ Con underscore
+    $ore_previste = $data['ore_previste'] ?? null;        
+    $data_inizio = $data['data_inizio'] ?? null;         
+    $data_fine = $data['data_fine'] ?? null;              
     
     if (!$id_dipendente || !$id_cantiere) {
         throw new Exception('Dipendente e Cantiere sono obbligatori');

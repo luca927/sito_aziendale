@@ -24,7 +24,7 @@ try {
                 d.nome as nome_dipendente,
                 d.cognome as cognome_dipendente
             FROM assegnazioni_dipendenti_cantiere adc
-            LEFT JOIN dipendenti d ON adc.id_dipendente = d.id
+            INNER JOIN dipendenti d ON adc.id_dipendente = d.id
             WHERE adc.id_cantiere = ?";
     
     $stmt = $conn->prepare($sql);
