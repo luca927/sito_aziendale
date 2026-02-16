@@ -655,9 +655,20 @@ function rilevaPosizioneGPS() {
 
 // --- CARICA CANTIERI CON NOMI OPERAI ---
 async function caricaCantieri() {
-    const res = await fetch("api/get_cantieri.php");
-    cantieriGlobali = await res.json();
-    mostraCantieri(cantieriGlobali);
+    try {
+        const res = await fetch("api/get_cantieri.php");
+        const data = await res.json();
+
+        if (!data || !Array.isArray(data)) {
+            console.error("Risposta API non valida:", data);
+            return;
+        }
+
+        cantieriGlobali = data; // salva globale
+        mostraCantieri(cantieriGlobali);
+    } catch (error) {
+        console.error("Errore nel caricamento cantieri:", error);
+    }
 }
 
 // --- CARICA DIPENDENTI ---
@@ -732,8 +743,8 @@ function mostraCantieri(lista) {
             ? `<a href="https://www.google.com/maps?q=${c.lat},${c.lng}" 
                  target="_blank" 
                  class="btn btn-outline-primary btn-sm">
-                <i class="fa-solid fa-location-dot"></i>
-             </a>`
+                    <i class="fa-solid fa-location-dot"></i>
+               </a>`
             : `<span class="text-muted small">-</span>`;
 
         tbody.innerHTML += `
@@ -744,9 +755,9 @@ function mostraCantieri(lista) {
                 <td>${c.referente || '-'}</td>
                 <td><small>${c.data_inizio || '-'}</small></td>
                 <td><small>${c.data_fine || '-'}</small></td>
-                <td><small>${c.giorni_lavoro && c.giorni_lavoro.trim() !== "" ? c.giorni_lavoro : '-'}</small></td>
+                <td><small>${c.giorni_lavoro?.trim() || '-'}</small></td>
                 <td><span class="badge bg-primary">${c.stato}</span></td>
-                <td><small>${c.nome_operai || '-'}</small></td>
+                <td><small>${c.operai?.trim() || 'Nessun operaio'}</small></td>
                 <td class="text-center">${linkMappa}</td>
                 <td class="text-nowrap">
                     <button class="btn btn-warning btn-sm me-1" onclick="apriModificaCantiere(${c.id})" title="Modifica">
@@ -797,15 +808,26 @@ document.querySelectorAll("#cantiereTabs .nav-link").forEach(btn => {
 
 // --- APRI MODALE NUOVO ---
 document.getElementById("openModalBtn").addEventListener("click", () => {
+    // ✅ RESETTA TUTTO
     cantiereForm.reset();
     document.getElementById("cantiere_id").value = "";
     document.getElementById("cantiereModalTitle").innerText = "Nuovo Cantiere";
 
-    document.querySelector("#cantiereTabs .nav-link.active").classList.remove("active");
+    // Resetta i checkbox giorni
+    document.querySelectorAll('#giorniBox input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+    });
+
+    // Resetta le tab
+    document.querySelector("#cantiereTabs .nav-link.active")?.classList.remove("active");
     document.querySelector("#cantiereTabs .nav-link[data-tab='dati']").classList.add("active");
 
     document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
     document.getElementById("tab-dati").classList.add("active");
+
+    // Resetta le tabelle operai e mezzi
+    document.getElementById('operaiBody').innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nessun operaio assegnato</td></tr>';
+    document.getElementById('mezziBody').innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nessun mezzo assegnato</td></tr>';
 
     cantiereModal.classList.add("show");
 });
@@ -990,7 +1012,7 @@ async function eliminaOperaioCantiere(id) {
 // --- MEZZI CANTIERE ---
 async function caricaMezziCantiere(id_cantiere) {
     try {
-        const res = await fetch(`api/get_assegnazioni_mezzo_cantiere.php?id_mezzo=0&id_cantiere=${id_cantiere}`);
+       const res = await fetch(`api/get_assegnazioni_mezzo_cantiere.php?id_cantiere=${id_cantiere}`);
         const data = await res.json();
         
         const tbody = document.getElementById('mezziBody');

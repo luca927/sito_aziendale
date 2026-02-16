@@ -462,11 +462,32 @@ function apriModifica(id) {
 
 // 4. Gestione apertura modale per NUOVO MEZZO (Reset form)
 document.getElementById('openModalBtn').onclick = () => {
+
+  // Reset form
   form.reset();
-  document.getElementById('mezzo_id').value = ''; // ID vuoto = Nuovo inserimento
+
+  // Reset ID
+  document.getElementById('mezzo_id').value = '';
+
+  // Titolo
   document.getElementById('modalTitle').innerText = 'Nuovo Mezzo';
+
+  // Stato di default (usa un valore ESISTENTE!)
+  document.getElementById('stato').value = 'attivo';
+
+  // 🔥 SVUOTA TABELLA MANUTENZIONI
+  const tbody = document.getElementById('manutenzioniBody');
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="6" class="text-center text-muted">
+        Nessuna manutenzione registrata
+      </td>
+    </tr>
+  `;
+
   modal.classList.add('show');
 };
+
 
 
 // 6. Invio Form (Salvataggio o Aggiornamento)

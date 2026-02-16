@@ -146,6 +146,7 @@ $resMezzi = $conn->query("SELECT id, nome_mezzo, targa FROM mezzi");
                     <th class="col-mezzo">MEZZO</th>
                     <th class="col-coordinate">COORDINATE</th>
                     <th class="col-data">DATA</th>
+                    <th class="col-azioni">AZIONI</th>
                   </tr>
                 </thead>
                 <tbody id="dashboard-data"></tbody>
@@ -308,7 +309,7 @@ function displayPage(page) {
     pageData.forEach(row => {
         const badgeClass = row.tipo_attivita === 'SPOSTAMENTO' ? 'bg-info' : 'bg-success';
         const haCoord = (row.lat && row.lng);
-       const action = haCoord ? `onclick="openMap(${row.lat}, ${row.lng}, '${row.dipendente.replace(/'/g, "\\'")}')"` : "";
+        const action = haCoord ? `onclick="openMap(${row.lat}, ${row.lng}, '${row.dipendente.replace(/'/g, "\\'")}')"` : "";
 
         tbody.innerHTML += `
             <tr>
@@ -323,6 +324,14 @@ function displayPage(page) {
                     </div>
                 </td>
                 <td class="col-data">${row.dataFormattata}</td>
+                <td class="col-azioni">
+                    <button class="btn btn-sm btn-warning me-2" onclick="modificaAttivita(${row.id})" title="Modifica">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="eliminaAttivita(${row.id})" title="Elimina">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
             </tr>
         `;
     });
@@ -398,23 +407,26 @@ function esportaInCSV() {
 // Collega la funzione al pulsante esistente nel DOM
 document.getElementById('downloadReport').addEventListener('click', esportaInCSV);
 
-// --- GESTIONE INVIO FORM (AGGIUNGI) ---
+// --- GESTIONE INVIO FORM (AGGIUNGI/MODIFICA) ---
 document.getElementById('formAssegna').addEventListener('submit', async function(e) {
     e.preventDefault();
 
-    // Creazione del pacchetto dati (Payload)
-  const payload = {
-    tipo_attivita: document.getElementById('selTipo').value,
-    dipendente_id: document.getElementById('selDipendente').value,
-    cantiere_id: document.getElementById('selCantiere').value,
-    mezzo_id: document.getElementById('selMezzo').value,
-    // CORREZIONE QUI: usa gli ID corretti 'latitudine' e 'longitudine'
-    lat_man: parseFloat(document.getElementById('latitudine').value) || null,
-    lng_man: parseFloat(document.getElementById('longitudine').value) || null
-};
+    const idAttivita = document.getElementById('attivita_id')?.value || '';
+    const isUpdate = !!idAttivita;
+
+    const payload = {
+        id: idAttivita,
+        tipo_attivita: document.getElementById('selTipo').value,
+        dipendente_id: document.getElementById('selDipendente').value,
+        cantiere_id: document.getElementById('selCantiere').value,
+        mezzo_id: document.getElementById('selMezzo').value,
+        lat_man: parseFloat(document.getElementById('latitudine').value) || null,
+        lng_man: parseFloat(document.getElementById('longitudine').value) || null
+    };
 
     try {
-        const response = await fetch('api/assegna_attivita.php', {
+        const endpoint = isUpdate ? 'api/aggiorna_attivita.php' : 'api/assegna_attivita.php';
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -422,14 +434,19 @@ document.getElementById('formAssegna').addEventListener('submit', async function
             body: JSON.stringify(payload)
         });
 
-        // Controlliamo se la risposta è valida
         const result = await response.json();
 
         if (result.success) {
-            alert("Operazione registrata con successo!");
-            // Reset del form e ricaricamento dati
+            alert(isUpdate ? "Operazione aggiornata con successo!" : "Operazione registrata con successo!");
+            
+            // Reset del form
             document.getElementById('formAssegna').reset();
-            loadDashboard(); 
+            if (document.getElementById('attivita_id')) {
+                document.getElementById('attivita_id').value = '';
+            }
+            document.querySelector('#formAssegna button[type="submit"]').innerHTML = '<i class="fa-solid fa-plus me-2"></i>AGGIUNGI OPERAZIONE';
+            
+            loadDashboard();
         } else {
             alert("Errore durante il salvataggio: " + result.error);
         }
@@ -518,6 +535,70 @@ function success(pos) {
 function error(err) {
     console.warn(`ERRORE (${err.code}): ${err.message}`);
     alert("Impossibile ottenere la posizione. Assicurati di aver concesso i permessi e di avere una connessione GPS attiva."); 
+}
+
+// --- MODIFICA ATTIVITA ---
+// --- MODIFICA ATTIVITA ---
+function modificaAttivita(id) {
+    const attivita = allData.find(a => String(a.id) === String(id));
+    
+    if (!attivita) {
+        alert('Attività non trovata');
+        return;
+    }
+    
+    // Popola il form con i dati
+    document.getElementById('selTipo').value = attivita.tipo_attivita;
+    document.getElementById('selDipendente').value = String(attivita.dipendente_id);
+    document.getElementById('selCantiere').value = attivita.cantiere; // ← Usa 'cantiere' non 'cantiere_id'
+    document.getElementById('selMezzo').value = attivita.mezzo || '';
+    document.getElementById('latitudine').value = attivita.lat || '';
+    document.getElementById('longitudine').value = attivita.lng || '';
+    
+    // Scroll al form
+    document.getElementById('formAssegna').scrollIntoView({ behavior: 'smooth' });
+    
+    // Aggiungi un ID nascosto
+    let inputId = document.getElementById('attivita_id');
+    if (!inputId) {
+        inputId = document.createElement('input');
+        inputId.type = 'hidden';
+        inputId.id = 'attivita_id';
+        document.getElementById('formAssegna').appendChild(inputId);
+    }
+    inputId.value = id;
+    
+    // Cambia il testo del bottone
+    const btnSubmit = document.querySelector('#formAssegna button[type="submit"]');
+    btnSubmit.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i>AGGIORNA OPERAZIONE';
+}
+
+// --- ELIMINA ATTIVITA ---
+function eliminaAttivita(id) {
+    if (!confirm('Sei sicuro di voler eliminare questa attività?')) {
+        return;
+    }
+    
+    fetch('api/elimina_attivita.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: id })
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            alert('Attività eliminata con successo!');
+            loadDashboard();
+        } else {
+            alert('Errore: ' + result.error);
+        }
+    })
+    .catch(err => {
+        console.error('Errore:', err);
+        alert('Errore durante l\'eliminazione');
+    });
 }
 
 </script>
@@ -618,6 +699,10 @@ function error(err) {
     background: rgba(255, 255, 255, 0.1);
     border-left-color: #4fc3f7 !important;
     color: #fff !important;
+}
+.col-azioni {
+    width: 120px;
+    text-align: center;
 }
 </style>
 

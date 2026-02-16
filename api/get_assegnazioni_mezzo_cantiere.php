@@ -5,12 +5,14 @@ require_once __DIR__ . '/../backend/auth.php';
 require_once __DIR__ . '/../backend/db.php';
 
 try {
-    $id_mezzo = $_GET['id_mezzo'] ?? 0;
+    // ✅ Leggi da GET, non da POST
     $id_cantiere = $_GET['id_cantiere'] ?? null;
     
     if (!$id_cantiere) {
         throw new Exception('ID Cantiere non fornito');
     }
+    
+    $id_cantiere = intval($id_cantiere);
     
     // Query per ottenere le assegnazioni mezzo al cantiere
     $sql = "SELECT 
@@ -66,4 +68,6 @@ try {
         'error' => $e->getMessage()
     ]);
 }
+
+$conn->close();
 ?>

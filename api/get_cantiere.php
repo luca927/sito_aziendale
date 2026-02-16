@@ -6,26 +6,37 @@ require_once __DIR__ . '/../backend/db.php';
 
 try {
     $sql = "SELECT 
-                c.id,
-                c.nome,
-                c.indirizzo,
-                c.referente,
-                c.giorni_lavoro,
-                c.data_inizio,
-                c.data_fine,
-                c.note,
-                c.coordinatore_sicurezza,
-                c.piano_sicurezza,
-                c.stato,
-                c.lat,
-                c.lng,
-                c.created_at,
-                c.updated_at,
-                COUNT(DISTINCT adc.id_dipendente) as nome_operai
-            FROM cantieri c
-            LEFT JOIN assegnazioni_dipendenti_cantiere adc ON c.id = adc.id_cantiere
-            GROUP BY c.id
-            ORDER BY c.data_inizio DESC";
+            c.id,
+            c.nome,
+            c.indirizzo,
+            c.referente,
+            c.giorni_lavoro,
+            c.data_inizio,
+            c.data_fine,
+            c.note,
+            c.coordinatore_sicurezza,
+            c.piano_sicurezza,
+            c.stato,
+            c.lat,
+            c.lng,
+            c.created_at,
+            c.updated_at,
+            COALESCE(
+                GROUP_CONCAT(
+                    DISTINCT CONCAT(d.nome, ' ', d.cognome)
+                    SEPARATOR ', '
+                ),
+                ''
+            ) AS operai
+        FROM cantieri c
+        LEFT JOIN assegnazioni_dipendenti_cantiere adc 
+            ON c.id = adc.id_cantiere
+        LEFT JOIN dipendenti d 
+            ON d.id = adc.id_dipendente
+        GROUP BY c.id
+        ORDER BY c.data_inizio DESC";
+
+
     
     $result = $conn->query($sql);
     
