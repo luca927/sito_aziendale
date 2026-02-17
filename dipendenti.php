@@ -109,6 +109,11 @@ require_once __DIR__ . '/backend/auth.php'; // Protegge la pagina
             </div>
 
             <div class="col-md-4 mb-3">
+              <label class="fw-bold">Data Assunzione</label>
+              <input type="date" id="data_assunzione" name="data_assunzione" class="form-control">
+            </div>
+
+            <div class="col-md-4 mb-3">
               <label>Sesso</label>
               <select id="sesso" name="sesso" class="form-select">
                 <option value="">Seleziona</option>
@@ -565,38 +570,46 @@ function loadDipendenti() {
 }
 
 function mostraDipendenti(lista) {
-  const tbody = document.querySelector('#dipTable tbody');
-  tbody.innerHTML = '';
+    const tbody = document.querySelector('#dipTable tbody');
+    tbody.innerHTML = '';
 
-  lista.forEach(d => {
-    let dataFormattata = d.data_assunzione
-      ? new Date(d.data_assunzione).toLocaleDateString('it-IT')
-      : 'N/A';
+    lista.forEach(d => {
+        // 1. GESTIONE DATA: Definiamo la variabile qui, visibile per tutta l'iterazione del ciclo
+        let dataDisplay = 'Non inserita';
+        
+        if (d.data_assunzione && d.data_assunzione !== "0000-00-00") {
+            const dateObj = new Date(d.data_assunzione);
+            if (!isNaN(dateObj.getTime())) {
+                dataDisplay = dateObj.toLocaleDateString('it-IT');
+            }
+        }
 
-    let btnElimina = '';
-    if (USER_ROLE === 'admin') {
-      btnElimina = `
-        <button class="btn btn-sm btn-danger" onclick="eliminaDipendente(${d.id})">
-          <i class="fa-solid fa-trash"></i>
-        </button>`;
-    }
+        // 2. GESTIONE RUOLO: Verifichiamo il ruolo per i permessi
+        let btnElimina = '';
+        if (typeof USER_ROLE !== 'undefined' && USER_ROLE === 'admin') {
+            btnElimina = `
+                <button class="btn btn-sm btn-danger" onclick="eliminaDipendente(${d.id})">
+                    <i class="fa-solid fa-trash"></i>
+                </button>`;
+        }
 
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${d.nome}</td>
-      <td>${d.cognome}</td>
-      <td>${d.telefono || '-'}</td>
-      <td><code>${d.codice_fiscale || '-'}</code></td>
-      <td>${dataFormattata}</td>
-      <td class="text-end">
-        <button class="btn btn-sm btn-warning me-1" onclick="apriModifica(${d.id})">
-          <i class="fa-solid fa-pen"></i>
-        </button>
-        ${btnElimina}
-      </td>
-    `;
-    tbody.appendChild(tr);
-  });
+        // 3. CREAZIONE RIGA: Usiamo dataDisplay che è stata definita sopra
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${d.nome || '-'}</td>
+            <td>${d.cognome || '-'}</td>
+            <td>${d.telefono || '-'}</td>
+            <td><code>${d.codice_fiscale || '-'}</code></td>
+            <td>${dataDisplay}</td>
+            <td class="text-end">
+                <button class="btn btn-sm btn-warning me-1" onclick="apriModifica(${d.id})">
+                    <i class="fa-solid fa-pen"></i>
+                </button>
+                ${btnElimina}
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
 
 // --- FILTRI ---
@@ -657,7 +670,9 @@ function apriModifica(id) {
     // Anagrafica
     document.getElementById('dipendente_nome').value = item.nome || '';
     document.getElementById('dipendente_cognome').value = item.cognome || '';
+    const pulisciData = (data) => (data && data !== "0000-00-00") ? data : "";
     document.getElementById('data_nascita').value = item.dataDiNascita || '';  // Colonna DB: dataDiNascita
+    document.getElementById('data_assunzione').value = item.data_assunzione || '';
     document.getElementById('sesso').value = item.sesso || '';
     document.getElementById('stato_civile').value = item.stato_civile || '';
     document.getElementById('esperienze').value = item.Esperienze || '';
@@ -1018,6 +1033,7 @@ form.onsubmit = async (e) => {
     nome: document.getElementById('dipendente_nome').value,
     cognome: document.getElementById('dipendente_cognome').value,
     data_nascita: document.getElementById('data_nascita').value || null,
+    data_assunzione: document.getElementById('data_assunzione').value || null,
     sesso: document.getElementById('sesso').value || null,
     stato_civile: document.getElementById('stato_civile').value || null,
     esperienze: document.getElementById('esperienze').value || null,

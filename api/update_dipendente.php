@@ -13,6 +13,7 @@ try {
     $nome = $data['nome'] ?? '';
     $cognome = $data['cognome'] ?? '';
     $dataNascita = $data['data_nascita'] ?? null;
+    $dataAssunzione = $data['data_assunzione'] ?? null;
     $sesso = $data['sesso'] ?? null;
     $statoCivile = $data['stato_civile'] ?? null;
     $telefono = $data['telefono'] ?? null;
@@ -37,6 +38,7 @@ try {
             nome=?, 
             cognome=?, 
             dataDiNascita=?, 
+            data_assunzione=?,
             sesso=?, 
             stato_civile=?, 
             telefono=?, 
@@ -56,8 +58,8 @@ try {
         }
 
         $stmt->bind_param(
-            "sssssssssssssi",
-            $nome, $cognome, $dataNascita, $sesso, $statoCivile, $telefono,
+            "sssssssssssssii",
+            $nome, $cognome, $dataNascita, $dataAssunzione, $sesso, $statoCivile, $telefono,
             $email, $residenza, $codiceFiscale, $formazione,
             $esperienze, $competenze, $livello,
             $id
@@ -73,9 +75,9 @@ try {
     } else {
         // INSERT
         $sql = "INSERT INTO dipendenti 
-            (nome, cognome, dataDiNascita, sesso, stato_civile, telefono, recapitieMail,
+            (nome, cognome, dataDiNascita, data_assunzione, sesso, stato_civile, telefono, recapitieMail,
              indirizzoResidenza, codice_fiscale, Corsi_e_Formazione, Esperienze, Competenze, livello_esperienza)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $stmt = $conn->prepare($sql);
 
@@ -84,8 +86,8 @@ try {
         }
 
         $stmt->bind_param(
-            "sssssssssssssi",
-            $nome, $cognome, $dataNascita, $sesso, $statoCivile, $telefono,
+            "sssssssssssssii",
+            $nome, $cognome, $dataNascita, $dataAssunzione, $sesso, $statoCivile, $telefono,
             $email, $residenza, $codiceFiscale, $formazione,
             $esperienze, $competenze, $livello
         );

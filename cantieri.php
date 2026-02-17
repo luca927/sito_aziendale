@@ -518,84 +518,47 @@ include 'includes/header.php';
     padding: 0.35rem 0.65rem;
 }
 
+/* MODAL ANNIDATI - MIGLIORATO */
+/* MODALE PRINCIPALE (Mezzo) */
 .modal {
+    z-index: 2000 !important; /* Deve stare sopra la sidebar */
+}
+
+/* MODALE ANNIDATA (Manutenzione/Assegna) */
+.modal-nested {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: none;
+    /* Z-index superiore alla modale 1 */
+    z-index: 3000 !important; 
+    display: none; /* Gestito dalla classe .visible */
     align-items: center;
     justify-content: center;
-    z-index: 1000;
-}
-
-.modal.show {
-    display: flex !important;
-}
-
-.modal-content {
-    background: white;
-    border-radius: 8px;
-    max-width: 800px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    position: relative;
-    z-index: 1050;
-}
-
-/* MODAL ANNIDATI - OPERAI E MEZZI */
-.modal-nested {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 4px 25px rgba(0,0,0,0.4);
-    z-index: 2050;
-    max-width: 600px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    display: none;
+    /* Sfondo scuro che copre la prima modale */
+    background: rgba(0, 0, 0, 0.6); 
 }
 
 .modal-nested.visible {
-    display: block !important;
-}
-
-.modal-nested::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.3);
-    z-index: 2049;
-    display: none;
-}
-
-.modal-nested.visible::before {
-    display: block;
+    display: flex !important;
 }
 
 .modal-nested-content {
-    width: 100%;
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+    max-width: 600px;
+    width: 95%;
     position: relative;
-    z-index: 2051;
+    /* Assicura che il contenuto non scivoli via */
+    margin: auto; 
 }
 
-.modal-nested-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    border-top: 1px solid #e9ecef;
-    padding-top: 15px;
+/* Rimuovi eventuali ::before che creano conflitti di posizionamento */
+.modal-nested::before {
+    display: none !important;
 }
 </style>
 
@@ -726,11 +689,11 @@ function popolareMezzi() {
     });
 }
 
-// --- MOSTRA TABELLA CANTIERI CON NOMI OPERAI ---
+
 // --- MOSTRA TABELLA CANTIERI ---
 function mostraCantieri(lista) {
     const tbody = document.getElementById("cantieriTable");
-    console.log("Esempio cantiere:", lista[0]);
+    
     
     if (!lista || lista.length === 0) {
         tbody.innerHTML = '<tr><td colspan="11" class="text-center text-muted py-4">Nessun cantiere trovato</td></tr>';
@@ -740,7 +703,6 @@ function mostraCantieri(lista) {
     tbody.innerHTML = "";
 
     lista.forEach(c => {
-        console.log("Chiavi disponibili nel cantiere:", Object.keys(c));
         const linkMappa = (c.lat && c.lng)
             ? `<a href="https://www.google.com/maps?q=${c.lat},${c.lng}" 
                  target="_blank" 
@@ -880,43 +842,42 @@ function apriModificaCantiere(id) {
 
 
 // --- OPERAI CANTIERE ---
-async function caricaOperaiCantiere(id_cantiere) {
-    try {
-        const res = await fetch(`api/get_assegnazioni_operai_cantiere.php?id_cantiere=${id_cantiere}`);
-        const data = await res.json();
-        
-        const tbody = document.getElementById('operaiBody');
-        tbody.innerHTML = '';
-        
-        if (!data.success || data.data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nessun operaio assegnato</td></tr>';
-            return;
+async function caricaOperaiCantiere(idCantiere) {
+    const container = document.getElementById("tab-operai"); // Il div dentro la tab operai
+    container.innerHTML = "Caricamento...";
+
+   try {
+        const resTutti = await fetch("api/get_dipendenti.php");
+        const risposta = await resTutti.json(); // Chiamiamolo 'risposta' per chiarezza
+
+        // ACCESSO AI DATI: Prendiamo l'array dalla proprietà .data
+        const tuttiDipendenti = risposta.data; 
+
+        if (!Array.isArray(tuttiDipendenti)) {
+            throw new Error("I dati dei dipendenti non sono in formato array");
         }
-        
-        data.data.forEach((op) => {
-            const inizio = new Date(op.data_inizio).toLocaleDateString('it-IT');
-            const fine = op.data_fine ? new Date(op.data_fine).toLocaleDateString('it-IT') : '-';
-            const nomeCompleto = `${op.nome_dipendente} ${op.cognome_dipendente}`.trim();
+
+        const resAssegnati = await fetch(`api/get_assegnazioni_operaio.php?id_cantiere=${idCantiere}`);
+        const assegnati = await resAssegnati.json();
+
+        container.innerHTML = ""; 
+
+        tuttiDipendenti.forEach(d => {
+            // Controlliamo se l'ID del dipendente è nell'elenco degli assegnati
+            const isChecked = assegnati.some(idAssegnato => idAssegnato == d.id) ? "checked" : "";
             
-            const tr = document.createElement('tr');
-            
-            tr.appendChild(createTd(nomeCompleto)); // Nome e cognome insieme
-            tr.appendChild(createTd(op.ruolo_cantiere || '-'));
-            tr.appendChild(createTd(inizio));
-            tr.appendChild(createTd(fine));
-            tr.appendChild(createTd(op.ore_previste || '-'));
-            
-            const tdBtn = document.createElement('td');
-            tdBtn.innerHTML = `<button class="btn btn-xs btn-danger" onclick="eliminaOperaioCantiere(${op.id})">
-                <i class="fa-solid fa-trash"></i>
-            </button>`;
-            tr.appendChild(tdBtn);
-            
-            tbody.appendChild(tr);
+            container.innerHTML += `
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="operai[]" 
+                           value="${d.id}" id="op_${d.id}" ${isChecked}>
+                    <label class="form-check-label" for="op_${d.id}">
+                        ${d.cognome} ${d.nome}
+                    </label>
+                </div>`;
         });
-        
-    } catch (error) {
-        console.error("ERRORE GRAVE:", error);
+    } catch (err) {
+        container.innerHTML = "<span class='text-danger'>Errore nel caricamento operai.</span>";
+        console.error("Dettaglio Errore:", err);
     }
 }
 
@@ -1155,6 +1116,11 @@ document.addEventListener('click', (e) => {
 cantiereForm.onsubmit = async (e) => {
     e.preventDefault();
 
+    const operaiSelezionati = [];
+    document.querySelectorAll('#tab-operai input[type="checkbox"]:checked').forEach(cb => {
+        operaiSelezionati.push(cb.value);
+    });
+
     const giorniSelezionati = [...document.querySelectorAll("#giorniBox input:checked")]
         .map(cb => cb.value)
         .join(",");
@@ -1172,7 +1138,9 @@ cantiereForm.onsubmit = async (e) => {
         lng: document.getElementById("lng").value,
         stato: document.getElementById("stato_cantiere").value,
         coordinatore_sicurezza: document.getElementById("coordinatore_sicurezza").value,
-        piano_sicurezza: document.getElementById("piano_sicurezza").value
+        piano_sicurezza: document.getElementById("piano_sicurezza").value,
+        operai: operaiSelezionati
+        
     };
 
     const url = payload.id ? "api/update_cantiere.php" : "api/add_cantiere.php";

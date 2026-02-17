@@ -67,9 +67,8 @@ include 'includes/header.php';
       <button class="close-btn" id="closeModalBtn" onclick="closeMezzoModal(true)">&times;</button>
     </div>
 
-    <input type="hidden" id="mezzo_id" name="id">
-
     <form id="mezzoForm" novalidate>
+      <input type="hidden" id="mezzo_id" name="id">
 
       <!-- NAV TABS -->
       <ul class="nav nav-tabs" id="mezzoTabs">
@@ -223,11 +222,12 @@ include 'includes/header.php';
 </div>
 
 <!-- MODALE AGGIUNGI MANUTENZIONE -->
-<div id="modaleManutenzione" class="modal-nested" style="display: none;">
+<div id="modaleManutenzione" class="modal-nested">
   <div class="modal-nested-content">
     <h6 class="mb-3">Registra Manutenzione</h6>
     
     <form id="formManutenzione">
+      <input type="hidden" id="manutenzione_mezzo_id" name="id_mezzo">
       <div class="row g-2">
         
         <div class="col-md-6">
@@ -300,48 +300,46 @@ include 'includes/header.php';
 
 <!-- CSS MODALI NIDIFICATE -->
 <style>
+/* MODALE PRINCIPALE (Mezzo) */
+.modal {
+    z-index: 2000 !important; /* Deve stare sopra la sidebar */
+}
+
+/* MODALE ANNIDATA (Manutenzione/Assegna) */
 .modal-nested {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  z-index: 2050;
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  display: none; /* Nascosta di default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Z-index superiore alla modale 1 */
+    z-index: 3000 !important; 
+    display: none; /* Gestito dalla classe .visible */
+    align-items: center;
+    justify-content: center;
+    /* Sfondo scuro che copre la prima modale */
+    background: rgba(0, 0, 0, 0.6); 
 }
 
 .modal-nested.visible {
-  display: block; /* Mostrata quando ha classe 'visible' */
+    display: flex !important;
 }
 
 .modal-nested-content {
-  width: 100%;
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.6);
+    max-width: 600px;
+    width: 95%;
+    position: relative;
+    /* Assicura che il contenuto non scivoli via */
+    margin: auto; 
 }
 
-.modal-nested-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  border-top: 1px solid #e9ecef;
-  padding-top: 15px;
-}
-
+/* Rimuovi eventuali ::before che creano conflitti di posizionamento */
 .modal-nested::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: -1;
+    display: none !important;
 }
 </style>
 
@@ -571,74 +569,123 @@ async function caricaManutenzioni(id_mezzo) {
   }
 }
 
-document.getElementById('aggiungiManutenzione').addEventListener('click', function() {
-  closeMezzoModal(false); // Chiudi la modale principale per evitare sovrapposizioni
-  document.getElementById('modaleManutenzione').style.display = 'block';
-  document.getElementById('dataManutenzione').valueAsDate = new Date();
+// UNICO EVENTO PER AGGIUNGERE MANUTENZIONE
+document.getElementById('aggiungiManutenzione').addEventListener('click', async function(e) {
+    e.preventDefault(); // Impedisce al form principale di ricaricarsi
+    
+    let idMezzoCorrente = document.getElementById('mezzo_id').value;
+
+    if (!idMezzoCorrente || idMezzoCorrente === "") {
+        const conferma = confirm("Per aggiungere una manutenzione, il mezzo deve essere prima creato. Salvo ora e procedo?");
+        if (conferma) {
+            idMezzoCorrente = await salvaMezzoInBackground(); 
+            if (!idMezzoCorrente) return; 
+        } else {
+            return;
+        }
+    }
+
+    // MOSTRA LA MODALE
+    const modale = document.getElementById('modaleManutenzione');
+    modale.style.display = 'block'; // Usiamo display block
+    modale.classList.add('visible'); // E aggiungiamo la classe per sicurezza
+    
+    // COMPILA I CAMPI
+    document.getElementById('manutenzione_mezzo_id').value = idMezzoCorrente;
+    document.getElementById('dataManutenzione').valueAsDate = new Date();
 });
 
-// Quando chiudi dalla X o Annulla, resetta il form
-document.getElementById('closeModalBtn').onclick = () => {
-  closeMezzoModal(true); // true = resetta il form
-};
+// Funzione di supporto per salvare il mezzo "al volo"
+document.getElementById('aggiungiManutenzione').addEventListener('click', async function(e) {
+    e.preventDefault();
+    
+    let idMezzoCorrente = document.getElementById('mezzo_id').value;
 
+    if (!idMezzoCorrente || idMezzoCorrente === "") {
+        const conferma = confirm("Per aggiungere una manutenzione, il mezzo deve essere prima creato. Lo salvo ora e procedo?");
+        if (conferma) {
+            // NOTA: assicurati che qui l'ID del form sia 'mezzoForm' (quello corretto nel tuo HTML)
+            idMezzoCorrente = await salvaMezzoInBackground(); 
+            if (!idMezzoCorrente) return; 
+        } else {
+            return;
+        }
+    }
+
+    // MOSTRA LA MODALE USANDO LA CLASSE
+    const modale = document.getElementById('modaleManutenzione');
+    modale.classList.add('visible'); 
+    
+    // COMPILA I CAMPI
+    document.getElementById('manutenzione_mezzo_id').value = idMezzoCorrente;
+    document.getElementById('dataManutenzione').valueAsDate = new Date();
+});
+
+// FUNZIONE PER CHIUDERE
 function chiudiModaleManutenzione() {
-  document.getElementById('modaleManutenzione').style.display = 'none';
-  document.getElementById('formManutenzione').reset();
-
-  //riapri la modale principale con i dati del mezzo
-  modal.classList.add('show');
+    const modale = document.getElementById('modaleManutenzione');
+    // 1. Rimuoviamo la classe CSS
+    modale.classList.remove('visible');
+    
+    // 2. Forziamo il display a none (questo vince su tutto)
+    modale.style.display = 'none';
+    
+    // 3. Resettiamo il form
+    const form = document.getElementById('formManutenzione');
+    if(form) form.reset();
+    
+    console.log("Modale manutenzione chiusa forzatamente.");
 }
 
-document.getElementById('formManutenzione').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  
-  const idMezzo = document.getElementById('mezzo_id').value;
-  const data = document.getElementById('dataManutenzione').value;
-  const tipo = document.getElementById('tipoManutenzione').value;
-  const descrizione = document.getElementById('descrizioneManutenzione').value;
-  const costo = document.getElementById('costoManutenzione').value;
-  const ore = document.getElementById('oreLavoro').value;
-  const fornitore = document.getElementById('fornitore').value;
-  const prossima = document.getElementById('prossimaManutenzioneNew').value;
-  const completata = document.getElementById('completataCheck').checked ? 1 : 0;
-  
-  if (!idMezzo || !data || !tipo) {
-    alert('Compila i campi obbligatori');
-    return;
-  }
-  
-  try {
-    const res = await fetch('api/add_manutenzioni.php', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
+
+// GESTIONE INVIO FORM MANUTENZIONE
+document.getElementById('formManutenzione').onsubmit = async function(e) {
+    e.preventDefault(); // Impedisce il ricaricamento della pagina
+
+    // Recuperiamo l'ID del mezzo per ricaricare la tabella dopo
+    const idMezzo = document.getElementById('manutenzione_mezzo_id').value;
+
+    // Creiamo il pacchetto dati
+    const payload = {
         id_mezzo: idMezzo,
-        data_manutenzione: data,
-        tipo_manutenzione: tipo,
-        descrizione: descrizione,
-        costo: costo || null,
-        ore_lavoro: ore || null,
-        fornitore: fornitore,
-        prossima_scadenza: prossima,
-        completata: completata
-      })
-    });
-    
-    const result = await res.json();
-    
-    if (result.success) {
-      chiudiModaleManutenzione();
-      caricaManutenzioni(idMezzo); // Ricarica
-      alert('Manutenzione registrata!');
-    } else {
-      alert('Errore: ' + result.error);
+        data_manutenzione: document.getElementById('dataManutenzione').value,
+        tipo_manutenzione: document.getElementById('tipoManutenzione').value,
+        descrizione: document.getElementById('descrizioneManutenzione').value,
+        costo: document.getElementById('costoManutenzione').value || 0,
+        ore_lavoro: document.getElementById('oreLavoro').value || 0,
+        fornitore: document.getElementById('fornitore').value,
+        prossima_scadenza: document.getElementById('prossimaManutenzioneNew').value,
+        completata: document.getElementById('completataCheck').checked ? 1 : 0
+    };
+
+    try {
+        const res = await fetch('api/add_manutenzioni.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+            alert("Manutenzione salvata con successo!");
+            
+            // 1. Chiudi la modale piccola
+            chiudiModaleManutenzione();
+            
+            // 2. Ricarica lo storico nella modale del mezzo
+            caricaManutenzioni(idMezzo);
+            
+            // 3. (Opzionale) Ricarica la tabella principale dei mezzi per aggiornare le date
+            caricaMezzi(); 
+        } else {
+            alert("Errore nel salvataggio: " + result.error);
+        }
+    } catch (error) {
+        console.error("Errore:", error);
+        alert("Errore di connessione al server.");
     }
-  } catch (error) {
-    console.error("Errore:", error);
-    alert('Errore durante il salvataggio');
-  }
-});
+};
 
 async function eliminaManutenzione(id) {
   if (!confirm('Eliminare questa manutenzione?')) return;

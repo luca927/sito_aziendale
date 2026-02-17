@@ -238,23 +238,29 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        try {
-            status.innerText = "Caricamento coordinate cantiere...";
+       try {
+            status.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Caricamento coordinate...";
             const response = await fetch(`api/get_cantiere.php?id=${idCantiere}`);
-            const data = await response.json();
+            let data = await response.json();
 
-            if (data.lat && data.lng) {
+            // FIX: Se il PHP restituisce un array [ {...} ], prendiamo il primo elemento
+            if (Array.isArray(data)) {
+                data = data[0];
+            }
+
+            // Verifichiamo che i dati esistano e non siano "0" o null
+            if (data && data.lat && data.lng && data.lat !== "0.00000000") {
                 inputLat.value = data.lat;
                 inputLng.value = data.lng;
-                status.innerHTML = "<span class='text-success'>📍 Coordinate cantiere caricate correttamente.</span>";
+                status.innerHTML = "<span class='text-success'>📍 Coordinate caricate: " + data.lat + ", " + data.lng + "</span>";
             } else {
                 inputLat.value = "";
                 inputLng.value = "";
-                status.innerHTML = "<span class='text-warning'>⚠️ Cantiere senza coordinate salvate.</span>";
+                status.innerHTML = "<span class='text-warning'>⚠️ Questo cantiere non ha coordinate valide nel database.</span>";
             }
         } catch (error) {
-            console.error("Errore:", error);
-            status.innerText = "Errore nel caricamento coordinate.";
+            console.error("Errore fetch:", error);
+            status.innerHTML = "<span class='text-danger'>❌ Errore di connessione con get_cantiere.php</span>";
         }
     });
 });
@@ -537,7 +543,6 @@ function error(err) {
     alert("Impossibile ottenere la posizione. Assicurati di aver concesso i permessi e di avere una connessione GPS attiva."); 
 }
 
-// --- MODIFICA ATTIVITA ---
 // --- MODIFICA ATTIVITA ---
 function modificaAttivita(id) {
     const attivita = allData.find(a => String(a.id) === String(id));
