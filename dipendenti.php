@@ -747,39 +747,47 @@ function chiudiModaleDocumento() {
 }
 
 document.getElementById('formDocumento').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  
-  const idDip = document.getElementById('dipendente_id').value;
-  const payload = {
-    id_dipendente: idDip,
-    tipo_documento: document.getElementById('tipoDoc').value,
-    numero_documento: document.getElementById('numeroDoc').value,
-    descrizione: null,
-    data_rilascio: document.getElementById('dataRilascio').value || null,
-    data_scadenza: document.getElementById('dataScadenza').value || null,
-    rilasciato_da: document.getElementById('rilasciatoDa').value || null
-  };
-  
-  try {
-    const res = await fetch('api/add_documenti.php', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(payload)
-    });
+    e.preventDefault();
     
-    const result = await res.json();
+    const idDipRaw = document.getElementById('dipendente_id').value;
     
-    if (result.success) {
-      chiudiModaleDocumento();
-      caricaDocumenti(idDip);
-      alert('Documento aggiunto!');
-    } else {
-      alert('Errore: ' + result.error);
+    // Controllo fondamentale: il dipendente deve avere un ID
+    if (!idDipRaw || idDipRaw === "") {
+        alert("Attenzione: Devi prima salvare l'anagrafica del dipendente (clicca su 'Salva Dipendente') prima di poter aggiungere documenti o corsi.");
+        return;
     }
-  } catch (error) {
-    console.error("Errore:", error);
-    alert('Errore durante il salvataggio');
-  }
+
+    const payload = {
+        id_dipendente: parseInt(idDipRaw),
+        tipo_documento: document.getElementById('tipoDoc').value.trim(),
+        numero_documento: document.getElementById('numeroDoc').value.trim(),
+        descrizione: null,
+        data_rilascio: document.getElementById('dataRilascio').value || null,
+        data_scadenza: document.getElementById('dataScadenza').value || null,
+        rilasciato_da: document.getElementById('rilasciatoDa').value || null
+    };
+
+    try {
+        const res = await fetch('api/add_documenti.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        
+        const result = await res.json();
+        
+        if (result.success) {
+            chiudiModaleDocumento();
+            caricaDocumenti(idDipRaw); // Ricarica la tabella
+            alert('Documento aggiunto!');
+        } else {
+            // Qui vedrai l'errore "Dipendente non trovato" se l'ID è sbagliato
+            alert('Errore: ' + result.error);
+        }
+    } catch (error) {
+        console.error("Errore:", error);
+        alert('Errore durante il salvataggio');
+    }
 });
 
 async function eliminaDocumento(id) {
@@ -854,43 +862,68 @@ function chiudiModaleCorso() {
 }
 
 document.getElementById('formCorso').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  
-  const idDip = document.getElementById('dipendente_id').value;
-  const payload = {
-    id_dipendente: idDip,
-    nome_corso: document.getElementById('nomeCorso').value,
-    descrizione: null,
-    ente_erogante: document.getElementById('enteCorso').value || null,
-    data_inizio_corso: document.getElementById('dataInizioCorso').value || null,
-    data_completamento: document.getElementById('dataCompCorso').value || null,
-    ore_corso: document.getElementById('oreCorso').value || null,
-    costo: document.getElementById('costoCorso').value || null,
-    certificazione_numero: null,
-    certificazione_rilasciata: document.getElementById('certCorso').checked ? 1 : 0,
-    voto_finale: null
-  };
-  
-  try {
-    const res = await fetch('api/add_corsi.php', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(payload)
-    });
+    e.preventDefault();
     
-    const result = await res.json();
-    
-    if (result.success) {
-      chiudiModaleCorso();
-      caricaCorsi(idDip);
-      alert('Corso aggiunto!');
-    } else {
-      alert('Errore: ' + result.error);
+    // 1. Recupera l'ID e trasformalo in numero
+    const idDipRaw = document.getElementById('dipendente_id').value;
+    const idDip = idDipRaw ? parseInt(idDipRaw) : null;
+
+    // 2. Controllo di sicurezza: se non c'è l'ID, non inviare la richiesta
+    if (!idDip) {
+        alert("Attenzione: Devi prima salvare il dipendente o caricarne uno esistente prima di aggiungere un corso.");
+        return;
     }
-  } catch (error) {
-    console.error("Errore:", error);
-    alert('Errore durante il salvataggio');
-  }
+    
+    // 3. Costruisci il payload con i tipi di dato corretti
+    const payload = {
+        id_dipendente: idDip,
+        nome_corso: document.getElementById('nomeCorso').value.trim(),
+        descrizione: null,
+        ente_erogante: document.getElementById('enteCorso').value || null,
+        data_inizio_corso: document.getElementById('dataInizioCorso').value || null,
+        data_completamento: document.getElementById('dataCompCorso').value || null,
+        // Converti in numero se c'è un valore, altrimenti null
+        ore_corso: document.getElementById('oreCorso').value ? parseInt(document.getElementById('oreCorso').value) : null,
+        costo: document.getElementById('costoCorso').value ? parseFloat(document.getElementById('costoCorso').value) : null,
+        certificazione_numero: null,
+        certificazione_rilasciata: document.getElementById('certCorso').checked ? 1 : 0,
+        voto_finale: null
+    };
+
+    // 4. Controllo nome corso (obbligatorio nel tuo PHP)
+    if (!payload.nome_corso) {
+        alert("Il nome del corso è obbligatorio");
+        return;
+    }
+    
+    try {
+        const res = await fetch('api/add_corsi.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+        });
+        
+        // Debug veloce: se non è 200, fammi vedere cosa dice il server
+        if (!res.ok) {
+            const errorText = await res.text();
+            console.error("Errore del server:", errorText);
+            alert("Errore 400: Il server ha rifiutato i dati. Controlla la console.");
+            return;
+        }
+
+        const result = await res.json();
+        
+        if (result.success) {
+            chiudiModaleCorso();
+            caricaCorsi(idDip);
+            alert('Corso aggiunto con successo!');
+        } else {
+            alert('Errore: ' + result.error);
+        }
+    } catch (error) {
+        console.error("Errore di rete:", error);
+        alert('Impossibile comunicare con il server.');
+    }
 });
 
 async function eliminaCorso(id) {
