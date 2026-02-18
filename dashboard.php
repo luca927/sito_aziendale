@@ -88,15 +88,6 @@ $resMezzi = $conn->query("SELECT id, nome_mezzo, targa FROM mezzi");
                             </select>
                         </div>
 
-                        <div class="col-md-4">
-                            <label class="form-label small fw-bold text-muted">Latitudine</label>
-                            <input type="text" id="latitudine" class="form-control bg-light" placeholder="Auto-compilata" readonly>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label small fw-bold text-muted">Longitudine</label>
-                            <input type="text" id="longitudine" class="form-control bg-light" placeholder="Auto-compilata" readonly>
-                        </div>
-
                         <div class="col-md-4 d-flex align-items-end">
                             <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">
                                 <i class="fa-solid fa-plus me-2"></i>AGGIUNGI OPERAZIONE
@@ -233,14 +224,12 @@ document.addEventListener("DOMContentLoaded", () => {
     selectCantiere.addEventListener("change", async function() {
         const idCantiere = this.value;
         if (!idCantiere) {
-            inputLat.value = "";
-            inputLng.value = "";
             return;
         }
 
        try {
             status.innerHTML = "<i class='fa-solid fa-spinner fa-spin'></i> Caricamento coordinate...";
-            const response = await fetch(`api/get_cantiere.php?id=${idCantiere}`);
+            const response = await fetch(`api/get_cantieri.php?id=${idCantiere}`);
             let data = await response.json();
 
             // FIX: Se il PHP restituisce un array [ {...} ], prendiamo il primo elemento
@@ -249,18 +238,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             // Verifichiamo che i dati esistano e non siano "0" o null
-            if (data && data.lat && data.lng && data.lat !== "0.00000000") {
-                inputLat.value = data.lat;
-                inputLng.value = data.lng;
-                status.innerHTML = "<span class='text-success'>📍 Coordinate caricate: " + data.lat + ", " + data.lng + "</span>";
+            if (data && data.lat && data.lng) {
+                status.innerHTML = `<span class='text-success'>📍 Coordinate caricate: ${data.lat}, ${data.lng}</span>`;
             } else {
-                inputLat.value = "";
-                inputLng.value = "";
                 status.innerHTML = "<span class='text-warning'>⚠️ Questo cantiere non ha coordinate valide nel database.</span>";
             }
         } catch (error) {
             console.error("Errore fetch:", error);
-            status.innerHTML = "<span class='text-danger'>❌ Errore di connessione con get_cantiere.php</span>";
+            status.innerHTML = "<span class='text-danger'>❌ Errore di connessione con get_cantieri.php</span>";
         }
     });
 });
@@ -281,7 +266,9 @@ async function loadDashboard() {
     try {
         const res = await fetch("api/dati_combinati.php");
         const data = await res.json();
+
          console.log("RAW DATA FROM PHP:", data);
+         
         allData = data.map(item => ({
             ...item,
             lat: item.lat ? parseFloat(item.lat) : null,
@@ -552,18 +539,26 @@ function modificaAttivita(id) {
         return;
     }
     
-    // Popola il form con i dati
+    // 1. Campi semplici
     document.getElementById('selTipo').value = attivita.tipo_attivita;
     document.getElementById('selDipendente').value = String(attivita.dipendente_id);
-    document.getElementById('selCantiere').value = attivita.cantiere; // ← Usa 'cantiere' non 'cantiere_id'
-    document.getElementById('selMezzo').value = attivita.mezzo || '';
+    document.getElementById('selMezzo').value = attivita.mezzo_id || '';
+
+    // 2. Cantiere - imposta il valore SENZA dispatchEvent
+    document.getElementById('selCantiere').value = attivita.cantiere_id;
+
+    // 3. Coordinate - scrivi direttamente quelle salvate nell'attività
     document.getElementById('latitudine').value = attivita.lat || '';
     document.getElementById('longitudine').value = attivita.lng || '';
     
-    // Scroll al form
+    if (attivita.lat && attivita.lng) {
+        document.getElementById('status-pos').innerHTML = 
+            `<span class='text-success'>📍 Coordinate caricate: ${attivita.lat}, ${attivita.lng}</span>`;
+    }
+
+    // 4. Gestione ID nascosto e UI
     document.getElementById('formAssegna').scrollIntoView({ behavior: 'smooth' });
     
-    // Aggiungi un ID nascosto
     let inputId = document.getElementById('attivita_id');
     if (!inputId) {
         inputId = document.createElement('input');
@@ -573,9 +568,8 @@ function modificaAttivita(id) {
     }
     inputId.value = id;
     
-    // Cambia il testo del bottone
-    const btnSubmit = document.querySelector('#formAssegna button[type="submit"]');
-    btnSubmit.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i>AGGIORNA OPERAZIONE';
+    document.querySelector('#formAssegna button[type="submit"]').innerHTML = 
+        '<i class="fa-solid fa-floppy-disk me-2"></i> AGGIORNA OPERAZIONE';
 }
 
 // --- ELIMINA ATTIVITA ---

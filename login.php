@@ -31,9 +31,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 
                 // Creiamo subito il fingerprint per evitare il kick immediato di auth.php
                 $_SESSION['fingerprint'] = md5($_SERVER['HTTP_USER_AGENT'] . $_SERVER['REMOTE_ADDR']);
-
-                // Redirezione alla Dashboard
-                header("Location: dashboard.php");
+                
+                // Redirezione in base al ruolo
+                if ($user['ruolo'] === 'admin') {
+                    header("Location: dashboard.php");
+                } else {
+                    header("Location: dipendente.php");
+                }
                 exit;
             } else {
                 $error = "Password errata.";

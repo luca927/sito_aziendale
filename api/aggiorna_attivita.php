@@ -23,16 +23,28 @@ try {
         throw new Exception('Campi obbligatori mancanti');
     }
     
-    // Se non hai coordinate manuali, prendi quelle del cantiere
-    if ($lat_man === null || $lng_man === null) {
+    // 1. Recuperiamo i dati dal JSON
+    $lat_inviata = !empty($data['lat_man']) ? floatval($data['lat_man']) : null;
+    $lng_inviata = !empty($data['lng_man']) ? floatval($data['lng_man']) : null;
+
+    // 2. Se mancano le coordinate inviate, le cerchiamo nel cantiere
+    if ($lat_inviata === null || $lng_inviata === null || $lat_inviata == 0) {
         $stmt_c = $conn->prepare("SELECT lat, lng FROM cantieri WHERE id = ?");
         $stmt_c->bind_param("i", $cantiere_id);
         $stmt_c->execute();
         $res_c = $stmt_c->get_result()->fetch_assoc();
         
-        $lat_man = $lat_man ?? (isset($res_c['lat']) ? floatval($res_c['lat']) : 0.0);
-        $lng_man = $lng_man ?? (isset($res_c['lng']) ? floatval($res_c['lng']) : 0.0);
+        // Assegniamo le coordinate del cantiere solo se non abbiamo quelle manuali
+        $lat_finale = ($res_c && isset($res_c['lat'])) ? floatval($res_c['lat']) : 0.0;
+        $lng_finale = ($res_c && isset($res_c['lng'])) ? floatval($res_c['lng']) : 0.0;
+    } else {
+        // Usiamo quelle inviate dal dispositivo (GPS)
+        $lat_finale = $lat_inviata;
+        $lng_finale = $lng_inviata;
     }
+
+// 3. Ora usiamo $lat_finale e $lng_finale nella query di UPDATE
+// (Modifica il bind_param sotto usando queste due variabili)
     
     // Aggiorna l'attività nella tabella dashboard
     $sql = "UPDATE dashboard 

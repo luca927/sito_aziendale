@@ -44,7 +44,7 @@ if (isset($_SESSION['username'])) {
             <i class="fa-regular fa-user"></i>
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="#">Profilo</a></li>
+            <li><a class="dropdown-item" href="profilo.php">Profilo</a></li>
             <li>
               <a class="dropdown-item text-danger" href="logout.php">
               <i class="fa-solid fa-right-from-bracket me-2"></i>Logout

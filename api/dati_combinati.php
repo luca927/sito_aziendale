@@ -6,8 +6,9 @@ $conn->set_charset("utf8mb4");
 $sql = "SELECT 
             d.id AS id,
             d.tipo_attivita,
+            -- Dati Dipendente
             CONCAT(dip.cognome, ' ', dip.nome) AS dipendente,
-            dip.id AS dipendente_id,
+            d.dipendente_id, -- Prendiamo l'ID direttamente dalla dashboard
             dip.recapitieMail AS email,
             dip.telefono AS telefono,
             dip.documentiIdentita AS documenti,
@@ -20,17 +21,22 @@ $sql = "SELECT
             dip.Corsi_e_Formazione AS formazione,
             dip.Esperienze AS esperienze,
             dip.Competenze AS competenze,
+            -- Dati Cantiere
             c.nome AS cantiere,
+            d.cantiere_id,    -- FONDAMENTALE
+            -- Dati Mezzo
             m.nome_mezzo AS mezzo,
-            d.lat,
-            d.lng,
+            d.mezzo_id,       -- FONDAMENTALE
+            -- Dati Geolocalizzazione e Tempo
+            c.lat AS lat,
+            c.lng AS lng,
             d.data_attivita AS data
         FROM dashboard d
         LEFT JOIN dipendenti dip ON d.dipendente_id = dip.id
         LEFT JOIN cantieri c ON d.cantiere_id = c.id
         LEFT JOIN mezzi m ON d.mezzo_id = m.id
         WHERE d.tipo_attivita IS NOT NULL AND d.tipo_attivita <> ''
-        ORDER BY d.data_attivita ASC";
+        ORDER BY d.data_attivita DESC";
 
 $result = $conn->query($sql);
 
