@@ -4,7 +4,8 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 if (isset($_SESSION['username'])) {
     $user = [
         'username' => $_SESSION['username'],
-        'id' => $_SESSION['user_id']
+        'id' => $_SESSION['user_id'],
+        'ruolo' => $_SESSION['ruolo'] ?? ''
     ];
 } else {
     $user = null;

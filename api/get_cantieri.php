@@ -14,7 +14,7 @@ try {
              JOIN dipendenti d ON adc.id_dipendente = d.id 
              WHERE adc.id_cantiere = c.id) as operai
             FROM cantieri c 
-            ORDER BY c.data_inizio DESC";
+            ORDER BY id ASC";
 
     $result = $conn->query($sql);
 

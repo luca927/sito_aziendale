@@ -39,6 +39,14 @@
             </a>
         </li>
 
+        <?php if (isset($_SESSION['ruolo']) && $_SESSION['ruolo'] === 'admin'): ?>
+        <li class="nav-item">
+            <a href="gestione_utenti.php" class="nav-link <?= basename($_SERVER['PHP_SELF']) == 'gestione_utenti.php' ? 'active' : '' ?>">
+                <i class="fa-solid fa-users-cog me-2"></i> Gestione Utenti
+            </a>
+        </li>
+            <?php endif; ?>
+
         <li class="nav-item">
             <a href="timbratura.php" class="nav-link">
                 <i class="fa-solid fa-tasks me-2"></i> Timbrature

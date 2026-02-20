@@ -84,6 +84,37 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['loggedin'])) {
     exit;
 }
 
+/* --- 4.1 CARICA DATI UTENTE DAL DB (MANCANTE!) --- */
+if (!isset($_SESSION['username']) || !isset($_SESSION['ruolo'])) {
+    // Ricarica dati utente dal DB
+    require_once __DIR__ . '/db.php';  // ← Assicurati che db.php sia incluso
+    
+    $stmt = $conn->prepare("SELECT username, ruolo, nome, email FROM users WHERE id = ?");
+    $stmt->bind_param("i", $_SESSION['user_id']);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    
+    if ($user = $result->fetch_assoc()) {
+        $_SESSION['username'] = $user['username'];
+        $_SESSION['ruolo'] = $user['ruolo'];   
+        $_SESSION['nome'] = $user['nome'];
+        $_SESSION['email'] = $user['email'];
+    } else {
+        // Utente non trovato nel DB → logout forzato
+        session_unset();
+        session_destroy();
+        if (isJsonRequest()) {
+            http_response_code(401);
+            echo json_encode(["success" => false, "error" => "Utente non trovato"]);
+            exit;
+        }
+        header("Location: login.php?error=user_not_found");
+        exit;
+    }
+    $stmt->close();
+}
+
+
 /* --- 5. Funzioni di Utilità --- */
 
 /**

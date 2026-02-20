@@ -413,8 +413,6 @@ document.getElementById('formAssegna').addEventListener('submit', async function
         dipendente_id: document.getElementById('selDipendente').value,
         cantiere_id: document.getElementById('selCantiere').value,
         mezzo_id: document.getElementById('selMezzo').value,
-        lat_man: parseFloat(document.getElementById('latitudine').value) || null,
-        lng_man: parseFloat(document.getElementById('longitudine').value) || null
     };
 
     try {
@@ -546,15 +544,6 @@ function modificaAttivita(id) {
 
     // 2. Cantiere - imposta il valore SENZA dispatchEvent
     document.getElementById('selCantiere').value = attivita.cantiere_id;
-
-    // 3. Coordinate - scrivi direttamente quelle salvate nell'attività
-    document.getElementById('latitudine').value = attivita.lat || '';
-    document.getElementById('longitudine').value = attivita.lng || '';
-    
-    if (attivita.lat && attivita.lng) {
-        document.getElementById('status-pos').innerHTML = 
-            `<span class='text-success'>📍 Coordinate caricate: ${attivita.lat}, ${attivita.lng}</span>`;
-    }
 
     // 4. Gestione ID nascosto e UI
     document.getElementById('formAssegna').scrollIntoView({ behavior: 'smooth' });
