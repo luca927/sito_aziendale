@@ -1,7 +1,6 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
 
-// Solo admin
 if (!isset($_SESSION['user_id']) || $_SESSION['ruolo'] !== 'admin') {
     header('Location: login.php');
     exit;
@@ -9,7 +8,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['ruolo'] !== 'admin') {
 
 require_once __DIR__ . '/backend/db.php';
 
-// Carica tutti gli utenti
 $utenti = [];
 $result = $conn->query("SELECT id, username, nome, email, ruolo, created_at FROM users ORDER BY created_at DESC");
 while ($row = $result->fetch_assoc()) {
@@ -22,19 +20,8 @@ while ($row = $result->fetch_assoc()) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gestione Utenti - Arsnet</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- Tieni solo i tuoi stili custom, Bootstrap e FontAwesome li include già header.php -->
   <style>
-    :root {
-      --navy: #1a2a4a;
-      --blue: #0d6efd;
-      --bg: #f4f6fb;
-    }
-    body { padding-top: 80px; background: var(--bg); font-family: 'Poppins', sans-serif; }
-    .navbar { background: var(--navy) !important; }
-    .navbar-brand span { color: #fff; }
-
     /* Stat cards */
     .stat-card {
       border: none; border-radius: 14px;
@@ -48,16 +35,15 @@ while ($row = $result->fetch_assoc()) {
       font-size: 1.3rem; color: #fff; flex-shrink: 0;
     }
     .stat-label { font-size: 0.78rem; color: #6c757d; font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
-    .stat-value { font-size: 1.6rem; font-weight: 700; color: var(--navy); line-height: 1; }
+    .stat-value { font-size: 1.6rem; font-weight: 700; color: var(--navy, #1a2a4a); line-height: 1; }
 
-    /* Table card */
     .table-card {
       border: none; border-radius: 16px;
       box-shadow: 0 2px 16px rgba(0,0,0,0.08);
       overflow: hidden;
     }
     .table-card .card-header {
-      background: var(--navy); color: #fff;
+      background: var(--navy, #1a2a4a); color: #fff;
       padding: 1rem 1.5rem;
       display: flex; align-items: center; justify-content: space-between;
     }
@@ -76,21 +62,15 @@ while ($row = $result->fetch_assoc()) {
       font-size: 0.9rem; font-weight: 600; color: #fff; flex-shrink: 0;
     }
     .badge-ruolo { font-size: 0.72rem; padding: 4px 10px; border-radius: 20px; }
-
-    /* Modal */
     .modal-content { border: none; border-radius: 16px; }
-    .modal-header { background: var(--navy); color: #fff; border-radius: 16px 16px 0 0; }
+    .modal-header { background: var(--navy, #1a2a4a); color: #fff; border-radius: 16px 16px 0 0; }
     .modal-header .btn-close { filter: invert(1); }
     .form-label { font-size: 0.83rem; font-weight: 500; color: #495057; }
     .section-divider { font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
       letter-spacing: .06em; color: #adb5bd; margin: 1rem 0 0.5rem; }
-
-    /* Password strength */
     .pwd-bar { height: 5px; border-radius: 10px; transition: all .3s; }
-
     .btn-action { width: 30px; height: 30px; padding: 0; border-radius: 8px;
       display: inline-flex; align-items: center; justify-content: center; font-size: 0.8rem; }
-
     .search-box { max-width: 260px; }
     .filter-pills .btn { border-radius: 20px; font-size: 0.8rem; }
 
@@ -102,38 +82,29 @@ while ($row = $result->fetch_assoc()) {
 </head>
 <body>
 
-<!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg fixed-top shadow-sm">
-  <div class="container-fluid px-4">
-    <a class="navbar-brand d-flex align-items-center gap-2" href="dashboard.php">
-      <img src="assets/img/logo_delta.png" alt="logo" style="height:32px">
-      <span class="fw-semibold">Arsnet</span>
-    </a>
-    <div class="ms-auto d-flex align-items-center gap-4">
-      <a href="dashboard.php" class="text-white text-decoration-none" title="Dashboard"><i class="fa-solid fa-house"></i></a>
-      <a href="get_utenti.php" class="text-white text-decoration-none" title="Utenti"><i class="fa-solid fa-users"></i></a>
-      <a href="profilo.php" class="text-white text-decoration-none" title="Profilo"><i class="fa-solid fa-user"></i></a>
-      <a href="logout.php" class="text-white text-decoration-none" title="Logout"><i class="fa-solid fa-right-from-bracket text-danger"></i></a>
+<?php include 'includes/header.php'; ?>
+
+<div class="d-flex">
+  <?php include 'includes/sidebar.php'; ?>
+
+  <div class="main-content">
+    <header>👥 Gestione Utenti</header>
+
+    <!-- Alert -->
+    <div id="alertBox" class="d-none mb-3"></div>
+
+    <!-- Titolo + bottone -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h4 class="fw-bold mb-0">Gestione Utenti</h4>
+        <small class="text-muted">Crea, modifica ed elimina gli account dei dipendenti</small>
+      </div>
+      <button class="btn btn-primary rounded-pill px-4" onclick="apriModaleCrea()">
+        <i class="fa-solid fa-user-plus me-2"></i>Nuovo Utente
+      </button>
     </div>
-  </div>
-</nav>
 
-<div class="container-fluid px-4" style="max-width:1100px;">
-
-  <!-- Alert -->
-  <div id="alertBox" class="d-none mb-3"></div>
-
-  <!-- Header -->
-  <div class="d-flex align-items-center justify-content-between mb-4">
-    <div>
-      <h4 class="fw-bold mb-0" style="color:var(--navy)">Gestione Utenti</h4>
-      <small class="text-muted">Crea, modifica ed elimina gli account dei dipendenti</small>
-    </div>
-    <button class="btn btn-primary rounded-pill px-4" onclick="apriModaleCrea()">
-      <i class="fa-solid fa-user-plus me-2"></i>Nuovo Utente
-    </button>
-  </div>
-
+  
   <!-- Stat cards -->
   <div class="row g-3 mb-4" id="statCards">
     <?php
@@ -142,6 +113,7 @@ while ($row = $result->fetch_assoc()) {
       $manager  = count(array_filter($utenti, fn($u) => $u['ruolo'] === 'manager'));
       $dip      = count(array_filter($utenti, fn($u) => $u['ruolo'] === 'dipendente'));
     ?>
+
     <div class="col-6 col-md-3">
       <div class="stat-card bg-white">
         <div class="stat-icon" style="background:linear-gradient(135deg,#0d6efd,#6610f2)"><i class="fa-solid fa-users"></i></div>
@@ -249,7 +221,9 @@ while ($row = $result->fetch_assoc()) {
       <span id="countLabel"><?= count($utenti) ?> utenti mostrati</span>
     </div>
   </div>
+  </div>
 </div>
+
 
 <!-- ==================== MODAL CREA ==================== -->
 <div class="modal fade" id="modalCrea" tabindex="-1">
@@ -404,7 +378,7 @@ while ($row = $result->fetch_assoc()) {
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
 // ---- Util ----
 function showAlert(msg, type = 'success') {
@@ -623,5 +597,4 @@ async function eliminaUtente() {
     } catch(e) { showAlert('Errore di connessione.', 'danger'); }
 }
 </script>
-</body>
-</html>
+<?php include 'includes/footer.php'; ?>

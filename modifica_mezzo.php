@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/backend/auth.php';
 require_once __DIR__ . '/backend/db.php';
+require_once __DIR__ . '/includes/auth_admin.php';
 
 if (!isset($_GET["id"]) || !is_numeric($_GET["id"])) {
     die("ID mezzo mancante o non valido");

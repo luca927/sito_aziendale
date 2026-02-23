@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/backend/db.php'; 
+require_once __DIR__ . '/includes/auth_admin.php';
 
 // Verifichiamo se la connessione esiste
 if (!$conn) {

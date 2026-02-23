@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/backend/auth.php'; // Protegge la pagina
+require_once __DIR__ . '/includes/auth_admin.php';
 ?>
 <?php include 'includes/header.php'; ?>
 

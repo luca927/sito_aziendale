@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/backend/auth.php';
 require_once __DIR__ . '/backend/db.php';
+require_once __DIR__ . '/includes/auth_admin.php';
 include 'includes/header.php'; 
 ?>
 

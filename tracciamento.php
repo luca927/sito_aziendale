@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/backend/auth.php';
+require_once __DIR__ . '/includes/auth_admin.php';
 include 'includes/header.php';
+
 
 function calcolaDistanza($lat1, $lon1, $lat2, $lon2) {
     $earth_radius = 6371000; // Raggio della terra in metri
