@@ -353,6 +353,12 @@ const modal = document.getElementById('mezzoModal');
 const form = document.getElementById('mezzoForm');
 let mezziGlobali = []; // Qui salviamo i dati per la modifica
 
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str || ''));
+    return div.innerHTML;
+}
+
 // Gestione Filtri
 document.getElementById("filtroNome").addEventListener("input", applicaFiltri);
 document.getElementById("filtroTarga").addEventListener("input", applicaFiltri);
@@ -396,13 +402,13 @@ function mostraMezzi(lista) {
     tbody.innerHTML += `
       <tr>
         <td class="ps-4">
-          <div class="fw-bold">${m.nome_mezzo}</div>
-          <small class="text-muted">${m.tipo || '-'}</small>
+          <div class="fw-bold">${escapeHtml(m.nome_mezzo || '-')}</div>
+          <small class="text-muted">${escapeHtml(m.tipo || '-')}</small>
         </td>
-        <td><span class="badge bg-secondary">${m.targa}</span></td>
-        <td>${m.anno || '-'}</td>
+        <td><span class="badge bg-secondary">${escapeHtml(m.targa || '-')}</span></td>
+        <td>${escapeHtml(m.anno || '-')}</td>
         <td><small>Prossima: <b class="text-danger">${prossima}</b></small></td>
-        <td><span class="badge ${statoClass}">${m.stato}</span></td>
+        <td><span class="badge ${statoClass}">${escapeHtml(m.stato || '-')}</span></td>
         <td class="text-end pe-4">
           <button class="btn btn-sm btn-warning" onclick="apriModifica(${m.id})">
             <i class="fa-solid fa-pen"></i>
@@ -553,9 +559,9 @@ async function caricaManutenzioni(id_mezzo) {
       tbody.innerHTML += `
         <tr>
           <td>${dataFmt}</td>
-          <td>${m.tipo_manutenzione || '-'}</td>
+          <td>${escapeHtml(m.tipo_manutenzione) || '-'}</td>
           <td>€ ${parseFloat(m.costo || 0).toFixed(2)}</td>
-          <td>${m.fornitore || '-'}</td>
+          <td>${escapeHtml(m.fornitore) || '-'}</td>
           <td>${prossima}</td>
           <td>
             <button class="btn btn-xs btn-danger" onclick="eliminaManutenzione(${m.id})">

@@ -171,6 +171,12 @@ let map = null;
 let markerGroup = null;
 let liveUpdateInterval = null;
 
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str || ''));
+    return div.innerHTML;
+}
+
 function openMap(lat, lng, dipendente) {
     // Mostra la modale
     const modal = document.getElementById('mapModal');
@@ -308,9 +314,9 @@ function displayPage(page) {
         tbody.innerHTML += `
             <tr>
                 <td class="col-tipo"><span class="badge ${badgeClass}">${row.tipo_attivita}</span></td>
-                <td class="col-dipendente fw-bold text-primary">${row.dipendente}</td>
-                <td class="col-cantiere">${row.cantiere}</td>
-                <td class="col-mezzo">${row.mezzo}</td>
+                <td class="col-dipendente fw-bold text-primary">${escapeHtml(row.dipendente)}</td>
+                <td class="col-cantiere">${escapeHtml(row.cantiere)}</td>
+                <td class="col-mezzo">${escapeHtml(row.mezzo)}</td>
                 <td class="col-coordinate">
                     <div class="coord-badge ${haCoord ? 'active' : 'disabled'}" ${action}>
                         <i class="fa-solid fa-location-dot me-1"></i>

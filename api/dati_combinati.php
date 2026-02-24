@@ -1,4 +1,22 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+// 1. Controlla se loggato
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(["error" => "Non autorizzato"]);
+    exit;
+}
+
+// 2. Controlla se la sessione è scaduta (1 ora)
+if (isset($_SESSION['last_activity']) && time() - $_SESSION['last_activity'] > 3600) {
+    session_destroy();
+    http_response_code(401);
+    echo json_encode(["error" => "Sessione scaduta"]);
+    exit;
+}
+$_SESSION['last_activity'] = time();
+
 require_once __DIR__ . '/../backend/db.php';
 header('Content-Type: application/json');
 $conn->set_charset("utf8mb4");
@@ -6,28 +24,12 @@ $conn->set_charset("utf8mb4");
 $sql = "SELECT 
             d.id AS id,
             d.tipo_attivita,
-            -- Dati Dipendente
             CONCAT(dip.cognome, ' ', dip.nome) AS dipendente,
-            d.dipendente_id, -- Prendiamo l'ID direttamente dalla dashboard
-            dip.recapitieMail AS email,
-            dip.telefono AS telefono,
-            dip.documentiIdentita AS documenti,
-            dip.patenti,
-            dip.indirizzoResidenza AS residenza,
-            dip.DatiBancari AS iban,
-            dip.sesso,
-            dip.stato_civile AS statoCivile,
-            dip.dataDiNascita,
-            dip.Corsi_e_Formazione AS formazione,
-            dip.Esperienze AS esperienze,
-            dip.Competenze AS competenze,
-            -- Dati Cantiere
+            d.dipendente_id,
             c.nome AS cantiere,
-            d.cantiere_id,    -- FONDAMENTALE
-            -- Dati Mezzo
+            d.cantiere_id,
             m.nome_mezzo AS mezzo,
-            d.mezzo_id,       -- FONDAMENTALE
-            -- Dati Geolocalizzazione e Tempo
+            d.mezzo_id,
             c.lat AS lat,
             c.lng AS lng,
             d.data_attivita AS data
@@ -41,7 +43,9 @@ $sql = "SELECT
 $result = $conn->query($sql);
 
 if (!$result) {
-    echo json_encode(["error" => $conn->error]);
+    error_log("Errore dati_combinati.php: " . $conn->error);
+    http_response_code(500);
+    echo json_encode(["error" => "Errore interno del server"]);
     exit;
 }
 

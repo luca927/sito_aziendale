@@ -568,6 +568,12 @@ let cantieriGlobali = [];
 let tuttiDipendenti = [];
 let tuttiMezzi = [];
 
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str || ''));
+    return div.innerHTML;
+}
+
 const cantiereModal = document.getElementById("cantiereModal");
 const cantiereForm  = document.getElementById("cantiereForm");
 
@@ -715,9 +721,9 @@ function mostraCantieri(lista) {
         tbody.innerHTML += `
             <tr>
                 <td><small>${c.id}</small></td>
-                <td><strong>${c.nome}</strong></td>
-                <td>${c.indirizzo || '-'}</td>
-                <td>${c.referente || '-'}</td>
+                <td><strong>${escapeHtml(c.nome)}</strong></td>
+                <td>${escapeHtml(c.indirizzo) || '-'}</td>
+                <td>${escapeHtml(c.referente) || '-'}</td>
                 <td><small>${c.data_inizio || '-'}</small></td>
                 <td><small>${c.data_fine || '-'}</small></td>
                 <td><small>${c.giorni_lavoro?.trim() || '-'}</small></td>
@@ -872,7 +878,7 @@ async function caricaOperaiCantiere(idCantiere) {
                     <input class="form-check-input" type="checkbox" name="operai[]" 
                            value="${d.id}" id="op_${d.id}" ${isChecked}>
                     <label class="form-check-label" for="op_${d.id}">
-                        ${d.cognome} ${d.nome}
+                        ${escapeHtml(d.cognome)} ${escapeHtml(d.nome)}
                     </label>
                 </div>`;
         });
@@ -994,9 +1000,9 @@ async function caricaMezziCantiere(id_cantiere) {
             
             tbody.innerHTML += `
                 <tr>
-                    <td>${m.nome_mezzo || '-'}</td>
-                    <td>${m.targa || '-'}</td>
-                    <td>${m.nome_dipendente ? m.nome_dipendente + ' ' + (m.cognome_dipendente || '') : '-'}</td>
+                    <td>${escapeHtml(m.nome_mezzo) || '-'}</td>
+                    <td>${escapeHtml(m.targa) || '-'}</td>
+                    <td>${m.nome_dipendente ? escapeHtml(m.nome_dipendente) + ' ' + escapeHtml(m.cognome_dipendente || '') : '-'}</td>
                     <td>${inizio}</td>
                     <td>${fine}</td>
                     <td>${km}</td>

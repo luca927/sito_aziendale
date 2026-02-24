@@ -1,6 +1,21 @@
 <?php
-ini_set('display_errors', 0);
-error_reporting(E_ALL);
+if (session_status() === PHP_SESSION_NONE) session_start();
+
+// 1. Controlla se loggato
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(["error" => "Non autorizzato"]);
+    exit;
+}
+
+// 2. Controlla se la sessione è scaduta (1 ora)
+if (isset($_SESSION['last_activity']) && time() - $_SESSION['last_activity'] > 3600) {
+    session_destroy();
+    http_response_code(401);
+    echo json_encode(["error" => "Sessione scaduta"]);
+    exit;
+}
+$_SESSION['last_activity'] = time();
 
 require_once __DIR__ . '/../backend/db.php';
 header('Content-Type: application/json');
@@ -15,9 +30,16 @@ try {
     $mez_id = !empty($data['mezzo_id']) ? intval($data['mezzo_id']) : null;
     $tipo   = !empty($data['tipo_attivita']) ? $data['tipo_attivita'] : "LAVORAZIONE";
 
+    $tipi_ammessi = ['LAVORAZIONE', 'SPOSTAMENTO'];
+    if (!in_array($tipo, $tipi_ammessi)) {
+        echo json_encode(["error" => "Tipo non valido"]);
+        exit;
+    }
+
+
     // Recuperiamo i dati assicurandoci che se sono vuoti diventino NULL
-    $lat_man = (!empty($data['lat_man']) || $data['lat_man'] === "0") ? floatval($data['lat_man']) : null;
-    $lng_man = (!empty($data['lng_man']) || $data['lng_man'] === "0") ? floatval($data['lng_man']) : null;
+    $lat_man = isset($data['lat_man']) && $data['lat_man'] !== '' ? floatval($data['lat_man']) : null;
+    $lng_man = isset($data['lng_man']) && $data['lng_man'] !== '' ? floatval($data['lng_man']) : null;
 
     // 1. Recupero coordinate del cantiere
     $stmt_c = $conn->prepare("SELECT lat, lng FROM cantieri WHERE id = ?");
