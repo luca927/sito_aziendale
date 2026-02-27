@@ -72,6 +72,51 @@ switch ($action) {
     $stmt2->close();
     break;
 
+    // ==================== MODIFICA UTENTE ====================
+case 'modifica':
+    $id    = intval($input['id'] ?? 0);
+    $nome  = trim($input['nome'] ?? '');
+    $email = trim($input['email'] ?? '');
+    $ruolo = in_array($input['ruolo'] ?? '', ['dipendente','manager','admin']) ? $input['ruolo'] : null;
+    $data_assunzione   = !empty($input['data_assunzione']) ? $input['data_assunzione'] : null;
+    $livello           = !empty($input['livello_esperienza']) ? intval($input['livello_esperienza']) : null;
+
+    if (!$id || !$ruolo) {
+        echo json_encode(['success' => false, 'error' => 'Dati non validi.']);
+        exit;
+    }
+
+    // Aggiorna users
+    $stmt = $conn->prepare("UPDATE users SET nome = ?, email = ?, ruolo = ? WHERE id = ?");
+    $stmt->bind_param("sssi", $nome, $email, $ruolo, $id);
+    if (!$stmt->execute()) {
+        echo json_encode(['success' => false, 'error' => 'Errore: ' . $conn->error]);
+        exit;
+    }
+    $stmt->close();
+
+    // Aggiorna anche la tabella dipendenti se collegata
+   $parti       = explode(' ', $nome, 2);
+    $nome_dip    = $parti[0] ?? '';
+    $cognome_dip = $parti[1] ?? '';
+
+    $stmt2 = $conn->prepare("
+        UPDATE dipendenti d
+        JOIN users u ON u.dipendente_id = d.id
+        SET d.nome              = ?,
+            d.cognome           = ?,
+            d.recapitieMail     = ?,
+            d.data_assunzione   = ?,
+            d.livello_esperienza = ?
+        WHERE u.id = ?
+    ");
+    $stmt2->bind_param("ssssii", $nome_dip, $cognome_dip, $email, $data_assunzione, $livello, $id);
+    $stmt2->execute();
+    $stmt2->close();
+
+    echo json_encode(['success' => true]);
+    break;
+
     // ==================== RESET PASSWORD ====================
     case 'reset_pwd':
         $id       = intval($input['id'] ?? 0);

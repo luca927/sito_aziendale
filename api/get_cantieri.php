@@ -21,6 +21,20 @@ header('Content-Type: application/json');
 // require_once __DIR__ . '/../backend/auth.php'; 
 require_once __DIR__ . '/../backend/db.php';
 
+if (isset($_GET['id']) && intval($_GET['id']) > 0) {
+    $id = intval($_GET['id']);
+    $result = $conn->query("SELECT id, lat, lng FROM cantieri WHERE id = $id LIMIT 1");
+    $row = $result->fetch_assoc();
+    
+    // Normalizza lat/lng come già fai
+    $row['lat'] = floatval($row['lat'] ?? 0) ?: null;
+    $row['lng'] = floatval($row['lng'] ?? 0) ?: null;
+    
+    echo json_encode($row); // Restituisce UN oggetto, non array
+    $conn->close();
+    exit;
+}
+
 try {
     $conn->set_charset("utf8mb4");
 

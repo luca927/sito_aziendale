@@ -28,7 +28,7 @@ if (isset($_SESSION['username'])) {
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
   <div class="container-fluid">
-    <a class="navbar-brand d-flex align-items-center" href="#">
+    <a class="navbar-brand d-flex align-items-center" href="dashboard.php">
       <img src="assets/img/logo_delta.png" alt="logo" style="height:34px;margin-right:10px">
       <span class="fw-semibold text-primary">Arsnet</span>
     </a>

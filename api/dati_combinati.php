@@ -30,8 +30,8 @@ $sql = "SELECT
             d.cantiere_id,
             m.nome_mezzo AS mezzo,
             d.mezzo_id,
-            c.lat AS lat,
-            c.lng AS lng,
+            IFNULL(CAST(c.lat AS DECIMAL(10,7)), NULL) AS lat,
+            IFNULL(CAST(c.lng AS DECIMAL(10,7)), NULL) AS lng,
             d.data_attivita AS data
         FROM dashboard d
         LEFT JOIN dipendenti dip ON d.dipendente_id = dip.id

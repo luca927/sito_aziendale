@@ -155,14 +155,17 @@ body {
     display: block;
 }
 
-.btn-success {
-    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-    color: white;
-}
+.btn-entrata { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+.btn-uscita  { background: linear-gradient(135deg, #dc3545, #fd7e14); color: white; }
 
-.btn-danger {
-    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
-    color: white;
+button.btn-entrata,
+button.btn-entrata:focus,
+button.btn-entrata:focus-visible,
+button.btn-entrata:hover {
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
+    color: white !important;
+    box-shadow: none !important;
+    outline: none !important;
 }
 
 /* ===== STATUS LOCATION ===== */
@@ -751,7 +754,7 @@ body {
                 </div>
 
                 <div class="buttons-container">
-                    <button onclick="effettuaTimbratura('Entrata')" class="btn btn-success btn-timbratura">
+                    <button onclick="effettuaTimbratura('Entrata')" class="btn-timbratura btn-entrata">
                         <i class="fas fa-sign-in-alt"></i>
                         ENTRATA
                     </button>

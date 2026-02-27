@@ -178,24 +178,29 @@ function escapeHtml(str) {
 }
 
 function openMap(lat, lng, dipendente) {
+    // Forza numeri
+    lat = parseFloat(lat);
+    lng = parseFloat(lng);
+
+    if (isNaN(lat) || isNaN(lng)) {
+        alert("Coordinate non valide per questo cantiere");
+        return;
+    }
+
     // Mostra la modale
     const modal = document.getElementById('mapModal');
-    if (modal) modal.style.display = 'block';
-    
+    modal.style.display = 'block';
     document.getElementById('mapTitle').innerText = "Posizione di: " + (dipendente || "Dipendente");
 
-    // Aspettiamo che la modale sia visibile per inizializzare Leaflet
     setTimeout(() => {
         try {
             if (!map) {
-                // Crea la mappa per la prima volta
                 map = L.map('map').setView([lat, lng], 15);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap'
                 }).addTo(map);
                 markerGroup = L.layerGroup().addTo(map);
             } else {
-                // Se esiste già, sposta solo la visuale
                 map.setView([lat, lng], 15);
             }
 
@@ -208,9 +213,7 @@ function openMap(lat, lng, dipendente) {
                     .openPopup();
             }
 
-            // Fix per il problema della mappa grigia
             map.invalidateSize();
-            
         } catch (error) {
             console.error("Errore Leaflet:", error);
         }
@@ -308,8 +311,16 @@ function displayPage(page) {
 
     pageData.forEach(row => {
         const badgeClass = row.tipo_attivita === 'SPOSTAMENTO' ? 'bg-info' : 'bg-success';
-        const haCoord = (row.lat && row.lng);
-        const action = haCoord ? `onclick="openMap(${row.lat}, ${row.lng}, '${row.dipendente.replace(/'/g, "\\'")}')"` : "";
+
+        // Coordinate corrette per questa riga
+        const lat = row.lat !== null ? parseFloat(row.lat) : null;
+        const lng = row.lng !== null ? parseFloat(row.lng) : null;
+        const haCoord = lat !== null && lng !== null;
+
+        // Creiamo il click handler inline SOLO se ci sono coordinate
+        const action = haCoord
+            ? `onclick="openMap(${lat}, ${lng}, '${row.dipendente.replace(/'/g, "\\'")}')"`
+            : "";
 
         tbody.innerHTML += `
             <tr>
